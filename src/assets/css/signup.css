@@ -1,0 +1,172 @@
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+.login-outer-cover {
+    display: table;
+    width: 100%;
+    height: 100vh;
+}
+.login-cover{
+    background-color: #303030;
+    display: table-cell;
+    vertical-align: middle;
+}
+.login-inner-cover{
+    width: 550px;
+    margin: 0 auto 30px;
+}
+.logo-content{
+    position: relative;
+    top: 30px;
+    text-align: center;
+}
+.green-header{
+    width: 450px;
+    padding: 20px;
+    text-align: center;
+    background-color: #9a0b03;
+    font-size: 18px;
+    border-radius: 4px;
+    color: #fff;
+    position: relative;
+    top: 40px;
+    margin: auto;
+}
+.login-content{
+    width: 100%;
+    background-color: #fff;
+    padding: 70px 30px 30px;
+    border-radius: 4px;
+}
+.login-content .MuiInput-formControl{
+    margin-bottom: 0px;
+}
+.signup-cover{
+    width: 100%;
+    text-align: center;
+}
+.login-content a,.login-content a:hover{
+    color:#9a0b03;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+}
+.forgot-link{
+    float: right;
+}
+/* .login-content button{
+    background-color: #9a0b03;
+    padding: 6px 20px;
+    margin-right: 10px;
+}
+.back-btn span{
+    color: #999999 !important;
+} */
+button.MuiButtonBase-root.MuiButton-root.back-btn.MuiButton-text.MuiButton-textSecondary.Mui-disabled.Mui-disabled{
+    border-color: #999999;
+}
+button.MuiButtonBase-root.MuiButton-root.back-btn.MuiButton-text.MuiButton-textSecondary.Mui-disabled.Mui-disabled span{
+    color: #999999 !important;
+  }
+.login-content button span{
+    color: #fff;
+}
+.login-content .MuiInput-formControl input::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+    color: #999999 !important;
+    opacity: 1;
+    font-size: 14px !important;
+}
+.login-content .MuiInput-formControl input::-moz-placeholder { /* Firefox 19+ */
+    color: #999999 !important;
+    opacity: 1;
+    font-size: 14px !important;
+}
+.login-content .MuiInput-formControl input:-ms-input-placeholder { /* IE 10+ */
+    color: #999999 !important;
+    opacity: 1;
+    font-size: 14px !important;
+}
+.login-content .MuiInput-formControl input:-moz-placeholder { /* Firefox 18- */
+    color: #999999 !important;
+    opacity: 1;
+    font-size: 14px !important;
+}
+.MuiInput-underline:after{
+    border-bottom: none;
+}
+.MuiInput-underline:hover:not(.Mui-disabled):before{
+    border-bottom: 1px solid rgba(0, 0, 0, 0.42) !important;
+}
+.MuiInput-underline:after{
+    border-bottom: 1px solid rgba(0, 0, 0, 0.42) !important;
+}
+.back-btn{
+    border: 1px solid #999999 !important;
+    background-color: #fff !important;
+    padding: 0px 0px !important;
+    min-width: 92px !important;
+}
+.back-btn span{
+    font-weight: 400;
+    line-height: 34px;
+}
+.back-btn span a{
+    width: 100%;
+}
+.login-content .MuiFormGroup-root{
+    margin-bottom: 10px !important;
+}
+.login-content .MuiFormGroup-root .MuiFormHelperText-root.error-class{
+    padding-top: 4px !important;
+}
+.login-content .MuiFormControl-marginNormal{
+    /* margin-top: 14px !important;
+    margin-bottom: 0 !important; */
+}
+.login-content label + .MuiInput-formControl{
+    margin-top: 10px;
+    /* padding-bottom: 5px; */
+}
+.login-content .MuiInputLabel-formControl{
+    transform: translate(0, 21px) scale(1);
+}
+.login-content .MuiInputLabel-shrink {
+    transform: translate(0, 1.5px) scale(0.75);
+    transform-origin: top left;
+}
+/* .login-content .select-gender label + .MuiInput-formControl{
+    padding-bottom: 0px !important;
+} */
+.login-content label.MuiFormLabel-filled + .MuiInput-formControl{
+    padding-bottom: 0;
+}
+.login-content label.MuiFormLabel-filled + .MuiInput-formControl input{
+    padding-bottom: 5px;
+    margin-top: 2px;
+}
+.login-content .MuiFormControl-marginNormal{
+    margin-top: 0px;
+    /* margin-bottom: 20px; */
+    margin-bottom: 17px;
+}
+.login-content button.MuiButtonBase-root.MuiButton-root.MuiButton-text.MuiButton-textPrimary.Mui-disabled.Mui-disabled, a.MuiTypography-root.MuiLink-root.MuiLink-underlineHover.back-btn.MuiTypography-colorSecondary{
+    padding: 5px;
+}
+.login-content button.MuiButtonBase-root.MuiButton-root.MuiButton-text.MuiButton-textPrimary.Mui-disabled.Mui-disabled, a.MuiTypography-root.MuiLink-root.MuiLink-underlineHover.back-btn.MuiTypography-colorSecondary span{
+    font-weight: 400;
+}
+.login-forgot{
+    margin-top: 20px;
+}
+.date-picker-span .MuiSvgIcon-root{
+    color:rgba(0, 0, 0, 0.54);
+    fill:rgba(0, 0, 0, 0.54)
+}
+.login-content .MuiSelect-select:focus{
+    background-color: transparent !important;
+}
+.login-content .MuiSelect-icon{
+    top: calc(50% - 9px);
+}

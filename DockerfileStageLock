@@ -1,0 +1,64 @@
+# First Stage
+# base image
+FROM node:10.16-alpine AS build
+
+# set working directory
+WORKDIR /usr/src/app
+
+# add `/usr/src/app/node_modules/.bin` to $PATH
+ENV PATH /usr/src/app/node_modules/.bin:$PATH
+
+# Bundle app source
+# COPY . .
+COPY ASG-workspace.code-workspace  /usr/src/app/ASG-workspace.code-workspace
+COPY bower.json  /usr/src/app/bower.json
+COPY build  /usr/src/app/build
+COPY ISSUE_TEMPLATE.md  /usr/src/app/ISSUE_TEMPLATE.md
+COPY jsconfig.json  /usr/src/app/jsconfig.json
+COPY LICENSE.md  /usr/src/app/LICENSE.md
+COPY package.json  /usr/src/app/package.json
+COPY public  /usr/src/app/public
+COPY README.md  /usr/src/app/README.md
+ADD documentation  /usr/src/app/documentation
+ADD src  /usr/src/app/src
+
+# New changes...
+
+# Copy .env file and shell script to container
+COPY ./env.sh .
+COPY .env .
+
+# Add bash
+RUN apk add --no-cache bash
+
+# Make our shell script executable
+RUN chmod +x env.sh
+
+# install and cache app dependencies
+COPY package*.json ./
+ADD package.json /usr/src/app/package.json
+RUN npm install --silent --production
+RUN npm install react-scripts@3.0.1 -g --silent --production
+
+# Second Stage
+
+FROM node:10.16-alpine
+RUN yarn global add serve
+WORKDIR /usr/src/app
+COPY --from=build /usr/src/app/build .
+# New changes...
+
+# Copy .env file and shell script to container
+COPY ./env.sh .
+COPY .env .
+
+# Add bash
+RUN apk add --no-cache bash
+
+# Make our shell script executable
+RUN chmod +x env.sh
+
+# start app
+EXPOSE 3000
+#CMD ["npm", "start"]
+CMD ["serve", "-p", "3000", "-s", "."]

@@ -1,0 +1,9 @@
+{
+  "basePath": "ab/asg/",
+  "compilerOptions": {
+    "baseUrl": "src",
+    "paths": {
+      "*": ["src/*"]
+    }
+  }
+}

@@ -1,0 +1,152 @@
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+.login-cover{
+    background-color: #303030;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: auto;
+    flex-flow: column wrap;
+}
+.logo-content{
+    position: relative;
+    top: 30px;
+}
+.green-header{
+    width: 450px;
+    padding: 20px;
+    text-align: center;
+    background-color: #9a0b03;
+    font-size: 18px;
+    border-radius: 4px;
+    color: #fff;
+    position: relative;
+    top: 40px;
+}
+.login-content{
+    width: 490px;
+    background-color: #fff;
+    padding: 70px 30px 30px;
+    border-radius: 4px;
+}
+.login-content .MuiInput-formControl{
+    margin-bottom: 10px;
+}
+.login-content .MuiInput-formControl input, .MuiInput-formControl select{
+    font-size: 14px;
+}
+.signup-cover{
+    width: 100%;
+    text-align: center;
+}
+.login-content a,.login-content a:hover{
+    color:#9a0b03;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+}
+.forgot-link{
+    float: right;
+}
+/* .login-content button{
+    background-color: #9a0b03;
+    padding: 6px 20px;
+}
+.login-content button span{
+    color: #fff !important;
+} */
+.login-outer-cover button.MuiButtonBase-root.MuiButton-root.MuiButton-text.MuiButton-textPrimary,
+.login-outer-cover a.MuiTypography-root.MuiLink-root.MuiLink-underlineHover.back-btn.MuiTypography-colorSecondary
+{
+    background-color: #9a0b03;
+    padding: 6px 20px;
+    margin-right: 10px;
+}
+.login-outer-cover button.MuiButtonBase-root.MuiButton-root.MuiButton-text.MuiButton-textPrimary span,
+.login-outer-cover a.MuiTypography-root.MuiLink-root.MuiLink-underlineHover.back-btn.MuiTypography-colorSecondary span {
+    color: #fff !important;
+    line-height: normal;
+    padding: 4px 12px;
+    font-weight: 400;
+}
+.login-outer-cover button.MuiButtonBase-root.MuiButton-root.MuiButton-text.MuiButton-textPrimary,
+.login-outer-cover a.MuiTypography-root.MuiLink-root.MuiLink-underlineHover.back-btn.MuiTypography-colorSecondary
+{
+    background-color: #9a0b03;
+    padding: 5px;
+    margin-right: 10px;
+}
+.login-outer-cover button.MuiButtonBase-root.MuiButton-root.MuiButton-text.MuiButton-textPrimary span,
+.login-outer-cover a.MuiTypography-root.MuiLink-root.MuiLink-underlineHover.back-btn.MuiTypography-colorSecondary span {
+    color: #fff !important;
+    line-height: normal;
+    padding: 4px 12px;
+    font-weight: 400;
+}
+.MuiTypography-root.MuiLink-root.MuiLink-underlineHover.back-btn.MuiTypography-colorSecondary{
+    color: #00000042;
+    background-color: #fff;
+}
+
+/* a.back-btn {
+    padding: 8px 20px 9px 20px;
+} */
+.back-btn {
+    border: 1px solid #999999 !important;
+    background-color: #fff !important;
+    padding: 4px 17px !important;
+}
+
+.login-content .MuiInputLabel-formControl { /* Chrome/Opera/Safari */
+    color: #999999 !important;
+    opacity: 1;
+    font-size: 14px !important;
+    font-weight: 300;
+}
+.MuiInput-underline:after{
+    border-bottom: none;
+}
+.MuiInput-underline:hover:not(.Mui-disabled):before{
+    border-bottom: 1px solid rgba(0, 0, 0, 0.42) !important;
+}
+.MuiInput-underline:after{
+    border-bottom: 1px solid rgba(0, 0, 0, 0.42) !important;
+}
+.login-outer-cover .MuiButtonBase-root.MuiButton-root.MuiButton-text.MuiButton-textPrimary {
+    background-color: #9a0b03;
+}
+
+.login-outer-cover .MuiButtonBase-root.MuiButton-root.MuiButton-text.MuiButton-textPrimary {
+    background-color: #9a0b03 ; 
+    padding: 6.5px 32px;
+    margin-right: 10px;
+}
+.login-outer-cover .MuiButtonBase-root.MuiButton-root .MuiButton-label {
+    color: #fff !important;
+}
+.MuiFormGroup-root{
+    margin-bottom: 15px;
+}
+.MuiFormHelperText-root.Mui-error{
+    margin-top: 4px;
+    font-size: 0.75rem;
+}
+.login-content button[disabled],
+.login-content button[disabled]:hover {
+    background-color: #be635d !important;    
+}
+
+.buttonProgress {
+    color: green;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -12px;
+    margin-left: -12px;
+}
+div.action-btns{
+    margin-top:10px;
+}
