@@ -62,13 +62,18 @@ import {
   PER_PAGE_OPTIONS,
   RECORD_PER_PAGE,
 } from "__helpers/constants";
+import * as am4core from "@amcharts/amcharts4/core";
+import * as am4charts from "@amcharts/amcharts4/charts";
+import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 
+
+am4core.useTheme(am4themes_animated);
 const columns = [
-  { id: "pollutionLevel", label: "Pollution Level" },
+  { id: "pollution", label: "Pollution Level" },
   { id: "co2", label: "CO2 Value" },
-  { id: "tVoc", label: "tVoc Value" },
+  { id: "tvoc", label: "tVoc Value" },
   { id: "timestamp", label: "Measurement Time" },
-  { id: "dateCreated", label: "Creation Date" },
+  // { id: "created_at", label: "Creation Date" },
 ];
 const ref = React.createRef();
 const options = {
@@ -86,10 +91,11 @@ const mapStateToProps = state => {
   return {
     userInfo: state.userInfo,
     timestamp: state.timestamp,
+    campaings: state.campaings,
     reduxLoadFlag: state.reduxLoadFlag,
   };
 };
-class RecordsClass extends React.Component {
+class RecordClass extends React.Component {
   constructor(props) {
     super(props);
     this._isMounted = false;
@@ -103,11 +109,105 @@ class RecordsClass extends React.Component {
       currPolution: "Normal",
       lastPollutionTime: "Just Now",
       totalRecords: "3000",
-      pollutionData: [],
+      pollutionData: this.props.campaings ? this.props.campaings : [],
+      reduxLoadFlag: false,
     };
+    this.handleGraphData = this.handleGraphData.bind(this)
+    this.handleChangePage = this.handleChangePage.bind(this);
+    this.handleChangeRowsPerPage = this.handleChangeRowsPerPage.bind(this);
   }
 
   componentDidMount() {
+    let chart = am4core.create("chartdiv", am4charts.XYChart);
+
+    chart.paddingRight = 20;
+
+    let data = [];
+    if (this.state.pollutionData && this.state.pollutionData.length) {
+      this.state.pollutionData.map((pData, key) => {
+        data.push({ date: new Date(pData.timestamp), name: "Pollution", value: pData.co2 });
+      })
+
+      // let visits = 10;
+      // for (let i = 1; i < 366; i++) {
+      //   visits += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 10);
+      //   data.push({ date: new Date(2018, 0, i), name: "name" + i, value: visits });
+      // }
+    }
+
+    chart.data = data;
+
+    let dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+    dateAxis.renderer.grid.template.location = 0;
+
+    let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+    valueAxis.tooltip.disabled = true;
+    valueAxis.renderer.minWidth = 35;
+
+    let series = chart.series.push(new am4charts.LineSeries());
+    series.dataFields.dateX = "date";
+    series.dataFields.valueY = "value";
+
+    series.tooltipText = "{valueY.value}";
+    chart.cursor = new am4charts.XYCursor();
+
+    let scrollbarX = new am4charts.XYChartScrollbar();
+    scrollbarX.series.push(series);
+    chart.scrollbarX = scrollbarX;
+
+    this.chart = chart;
+
+    // this.fetchData();
+  }
+  fetchData() {
+    // let apiUrl = "http://35.193.238.179:9090/api/pollution/data";
+    // let pollutionData = userService.fetchGlobalApisWithoutAuth(apiUrl);
+    // console.log(pollutionData)
+    // this.setState({
+    //   pollutionData: pollutionData,
+    // })
+  }
+
+  handleGraphData() {
+
+  }
+
+  componentWillUnmount() {
+    if (this.chart) {
+      this.chart.dispose();
+    }
+  }
+  componentDidUpdate(oldProps) {
+    if (oldProps.paddingRight !== this.props.paddingRight) {
+      this.chart.paddingRight = this.props.paddingRight;
+    }
+
+    if (this.props.reduxLoadFlag != undefined && this.state.reduxLoadFlag != this.props.reduxLoadFlag) {
+      let campaings = [];
+      let userInfo = {};
+      if (this.props.campaings) {
+        let campaingsList = this.props.campaings;
+        campaings = (campaingsList) ? campaingsList : [];
+        if (this.chart) {
+          this.chart.data = campaings;
+        }
+      }
+      this.setState({
+        pollutionData: campaings,
+      })
+    }
+  }
+  handleChangePage = async (event, newPage) => {
+    this.setState({
+      page: newPage
+    });
+    // setPage(newPage);
+  };
+  handleChangeRowsPerPage(event) {
+    this.setState({
+      rowsPerPage: +event.target.value,
+      page: 0
+    });
   }
   render() {
     const { classes } = this.props;
@@ -153,52 +253,6 @@ class RecordsClass extends React.Component {
     return (
       <div>
         {/* <NotificationContainer/> */}
-        <GridContainer>
-          <GridItem xs={12} sm={6}>
-            <Card className={"dash-tiles"}>
-              <CardHeader color="success" stats icon>
-                <CardIcon color="success" className={test} style={styletest}>
-                  <img src={featured} alt="logo" />
-                </CardIcon>
-                <p className={classes.cardCategory}>Current Pollution</p>
-                <h3 className={classes.cardTitle}>{currPolution}</h3>
-              </CardHeader>
-              <CardFooter stats>
-                <div className={classes.stats}>
-                  <img
-                    src={clock}
-                    className={clock_cover}
-                    style={clock_style}
-                    alt="time"
-                  />
-                  <span>{lastPollutionTime}</span>
-                </div>
-              </CardFooter>
-            </Card>
-          </GridItem>
-          <GridItem xs={12} sm={6}>
-            <Card className={"dash-tiles"}>
-              <CardHeader color="danger" stats icon>
-                <CardIcon color="danger" className={test1} style={styletest1}>
-                  <img src={advert} alt="logo" />
-                </CardIcon>
-                <p className={classes.cardCategory}>Number of Records</p>
-                <h3 className={classes.cardTitle}>{totalRecords}</h3>
-              </CardHeader>
-              <CardFooter stats>
-                <div className={classes.stats}>
-                  <img
-                    src={clock}
-                    className={clock_cover}
-                    style={clock_style}
-                    alt="time"
-                  />
-                  <span>{lastPollutionTime}</span>
-                </div>
-              </CardFooter>
-            </Card>
-          </GridItem>
-        </GridContainer>
         <GridContainer>
           <CardBody>
             <Paper className={(classes.root, this.cust_table_cover)}>
@@ -291,13 +345,13 @@ class RecordsClass extends React.Component {
   }
 }
 
-RecordsClass.propTypes = {
+RecordClass.propTypes = {
   classes: PropTypes.object.isRequired
 };
 
-const Records = connect(
+const Record = connect(
   mapStateToProps, mapDispatchToProps
-)(RecordsClass);
+)(RecordClass);
 
 // export default Form;
-export default withStyles(dashboardStyle)(Records);
+export default withStyles(dashboardStyle)(Record);

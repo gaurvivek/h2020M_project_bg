@@ -79,6 +79,7 @@ export const userService = {
   fetchAssetType,
   fetchAssetDisplayType,
   fetchCampaignStatus,
+  fetchGlobalApisWithoutAuth,
 };
 
 var originalSetItem = localStorage.setItem;
@@ -100,7 +101,74 @@ var localStorageSetHandler = function(e) {
 };
 
 document.addEventListener("itemInserted", localStorageSetHandler, false);
-
+async function fetchGlobalApisWithoutAuth(apiUrl) {
+  let showNotification = {};
+  let apiResponse = [];
+  try {
+      const response = await fetch(apiUrl, {
+              method: "GET",
+              // headers: generalAuthTokenHeader()
+          })
+          .then(response => {
+              console.log(response)
+              if (response.status === SECURITY_ERROR || response.status === FORBIDDEN_STATUS) {
+                  showNotification = {
+                      title: enMsg.sessionExpireTitle,
+                      message: enMsg.sessionExpire,
+                      type: "warning"
+                  };
+                  setTimeout(function() {
+                      // logout();
+                      // window.location.reload(true);
+                  }, 1000);
+                  // return Promise.reject("");
+              } else if (response.status === INVALID_DATA_POST) {
+                  showNotification = {
+                      title: enMsg.connectionFailed,
+                      message: enMsg.networkFailedError,
+                      type: "danger"
+                  };
+              } else if (response.ok) {
+                  return response.json();
+              } else {
+                  showNotification = {
+                      title: enMsg.connectionFailed,
+                      message: enMsg.networkFailedError,
+                      type: "danger"
+                  };
+              }
+              return response.json();
+          })
+          .then(data => {
+              if (data.errorCode === SECURITY_ERROR) {
+                  setTimeout(function() {
+                      logout();
+                      window.location.reload(true);
+                  }, 2000);
+                  return Promise.reject("");
+              }
+              apiResponse = data;
+              return apiResponse;
+          })
+          .catch(error => {
+              console.log(error)
+              showNotification = {
+                  title: enMsg.connectionFailed,
+                  message: enMsg.networkFailedError,
+                  type: "danger"
+              };
+          });
+  } catch (error) {
+      console.log(error)
+      showNotification = {
+          title: enMsg.connectionFailed,
+          message: enMsg.networkFailedError,
+          type: "danger"
+      };
+  }
+  // createNotification(showNotification);
+  return apiResponse;
+}
 function login(username, password) {
   console.log("countForCall3");
   const data = {

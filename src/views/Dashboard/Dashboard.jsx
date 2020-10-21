@@ -91,6 +91,7 @@ const mapStateToProps = state => {
   return {
     userInfo: state.userInfo,
     timestamp: state.timestamp,
+    campaings: state.campaings,
     reduxLoadFlag: state.reduxLoadFlag,
   };
 };
@@ -108,8 +109,10 @@ class DashboardClass extends React.Component {
       currPolution: "Normal",
       lastPollutionTime: "Just Now",
       totalRecords: "3000",
-      pollutionData: [],
+      pollutionData: this.props.campaings ? this.props.campaings : [],
+      reduxLoadFlag: false,
     };
+    this.handleGraphData = this.handleGraphData.bind(this)
   }
 
   componentDidMount() {
@@ -118,10 +121,16 @@ class DashboardClass extends React.Component {
     chart.paddingRight = 20;
 
     let data = [];
-    let visits = 10;
-    for (let i = 1; i < 366; i++) {
-      visits += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 10);
-      data.push({ date: new Date(2018, 0, i), name: "name" + i, value: visits });
+    if (this.state.pollutionData && this.state.pollutionData.length) {
+      this.state.pollutionData.map((pData, key) => {
+        data.push({ date: new Date(pData.timestamp), name: "Pollution", value: pData.co2 });
+      })
+
+      // let visits = 10;
+      // for (let i = 1; i < 366; i++) {
+      //   visits += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 10);
+      //   data.push({ date: new Date(2018, 0, i), name: "name" + i, value: visits });
+      // }
     }
 
     chart.data = data;
@@ -145,7 +154,22 @@ class DashboardClass extends React.Component {
     chart.scrollbarX = scrollbarX;
 
     this.chart = chart;
+
+    // this.fetchData();
   }
+  fetchData() {
+    // let apiUrl = "http://35.193.238.179:9090/api/pollution/data";
+    // let pollutionData = userService.fetchGlobalApisWithoutAuth(apiUrl);
+    // console.log(pollutionData)
+    // this.setState({
+    //   pollutionData: pollutionData,
+    // })
+  }
+
+  handleGraphData() {
+
+  }
+
   componentWillUnmount() {
     if (this.chart) {
       this.chart.dispose();
@@ -154,6 +178,21 @@ class DashboardClass extends React.Component {
   componentDidUpdate(oldProps) {
     if (oldProps.paddingRight !== this.props.paddingRight) {
       this.chart.paddingRight = this.props.paddingRight;
+    }
+
+    if (this.props.reduxLoadFlag != undefined && this.state.reduxLoadFlag != this.props.reduxLoadFlag) {
+      let campaings = [];
+      let userInfo = {};
+      if (this.props.campaings) {
+        let campaingsList = this.props.campaings;
+        campaings = (campaingsList) ? campaingsList : [];
+        if (this.chart) {
+          this.chart.data = campaings;
+        }
+      }
+      this.setState({
+        pollutionData: campaings,
+      })
     }
   }
   render() {
@@ -231,7 +270,7 @@ class DashboardClass extends React.Component {
                   <img src={advert} alt="logo" />
                 </CardIcon>
                 <p className={classes.cardCategory}>Number of Records</p>
-                <h3 className={classes.cardTitle}>{totalRecords}</h3>
+                <h3 className={classes.cardTitle}>{pollutionData.length}</h3>
               </CardHeader>
               <CardFooter stats>
                 <div className={classes.stats}>
@@ -246,93 +285,6 @@ class DashboardClass extends React.Component {
               </CardFooter>
             </Card>
           </GridItem>
-        </GridContainer>
-        <GridContainer>
-          <CardBody>
-            <Paper className={(classes.root, this.cust_table_cover)}>
-              <div className={(classes.tableWrapper, this.cust_table)}>
-                <Table>
-                  <TableHead className={this.tableh}>
-                    <TableRow>
-                      {columns.map(column => (
-                        <TableCell
-                          key={column.id}
-                          align={column.align}
-                          style={{ minWidth: column.minWidth }}
-                        >
-                          {column.label}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody key="TableBody">
-                    {typeof this.state.pollutionData === "object" &&
-                      this.state.pollutionData.length
-                      ? this.state.pollutionData
-                        .slice(
-                          this.state.page * this.state.rowsPerPage,
-                          this.state.page * this.state.rowsPerPage +
-                          this.state.rowsPerPage
-                        )
-                        .map(row => {
-                          return (
-                            <TableRow
-                              hover
-                              role="checkbox"
-                              tabIndex={-1}
-                              key={row.adNetworkId}
-                            >
-                              {columns.map(column => {
-                                const value = row[column.id];
-                                if (column.id == "dateCreated") {
-                                  let newDate = new Date(value).toUTCString();
-                                  return (
-                                    <TableCell key={column.id}>
-                                      {newDate}
-                                    </TableCell>
-                                  );
-                                }
-                                return (
-                                  <TableCell
-                                    key={column.id}
-                                    align={column.align}
-                                  >
-                                    {column.format &&
-                                      typeof value === "number"
-                                      ? column.format(value)
-                                      : (value) ? value : "unknown"}
-                                  </TableCell>
-                                );
-                              })}
-                            </TableRow>
-                          );
-                        })
-                      : null}
-                  </TableBody>
-                </Table>
-              </div>
-              <TablePagination
-                rowsPerPageOptions={PER_PAGE_OPTIONS}
-                component="div"
-                count={
-                  typeof this.state.pollutionData === "object" &&
-                    this.state.pollutionData.length
-                    ? this.state.pollutionData.length
-                    : 0
-                }
-                rowsPerPage={this.state.rowsPerPage}
-                page={this.state.page}
-                backIconButtonProps={{
-                  "aria-label": "previous page"
-                }}
-                nextIconButtonProps={{
-                  "aria-label": "next page"
-                }}
-                onChangePage={this.handleChangePage}
-                onChangeRowsPerPage={this.handleChangeRowsPerPage}
-              />
-            </Paper>
-          </CardBody>
         </GridContainer>
       </div>
     );
