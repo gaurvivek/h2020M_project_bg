@@ -107,7 +107,7 @@ async function fetchGlobalApisWithoutAuth(apiUrl) {
   try {
       const response = await fetch(apiUrl, {
               method: "GET",
-              // headers: generalAuthTokenHeader()
+              headers: clientTokenHeader()
           })
           .then(response => {
               console.log(response)

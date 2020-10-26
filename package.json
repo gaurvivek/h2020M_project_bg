@@ -25,6 +25,7 @@
     "filepond": "^4.7.2",
     "filepond-plugin-image-preview": "^4.4.0",
     "firebase": "^7.24.0",
+    "google-map-react": "^2.1.8",
     "highcharts": "^8.1.0",
     "highcharts-react-official": "^3.0.0",
     "history": "4.9.0",

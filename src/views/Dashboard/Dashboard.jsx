@@ -21,6 +21,10 @@ import enMsg from "__helpers/locale/en/en";
 import AddAlert from "@material-ui/icons/AddAlert";
 import { Chart } from "react-google-charts";
 
+import { MuiPickersUtilsProvider, KeyboardDatePicker } from "@material-ui/pickers"
+import { FormErrors } from "components/Login/FormErrors"
+import DateFnsUtils from "@date-io/date-fns"
+
 
 import {
   Button,
@@ -48,6 +52,7 @@ import {
   Input,
   Snackbar,
   LinearProgress,
+  TextField,
 } from "@material-ui/core";
 import CardBody from "components/Card/CardBody.jsx";
 import dashboardStyle from "assets/jss/material-dashboard-react/views/dashboardStyle.jsx";
@@ -65,9 +70,21 @@ import {
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
 import am4themes_animated from "@amcharts/amcharts4/themes/animated";
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
+// then all Highcharts modules you will need
+import HighchartsMore from 'highcharts/highcharts-more';
+import dataModule from 'highcharts/modules/data';
+import GoogleMapReact from 'google-map-react';
+import { last } from "@amcharts/amcharts4/.internal/core/utils/Array";
+import flatIcon from "assets/img/flat.svg"
 
 
 am4core.useTheme(am4themes_animated);
+HighchartsMore(Highcharts);
+dataModule(Highcharts);
+// Create chart instance
+
 const columns = [
   { id: "pollutionLevel", label: "Pollution Level" },
   { id: "co2", label: "CO2 Value" },
@@ -95,9 +112,24 @@ const mapStateToProps = state => {
     reduxLoadFlag: state.reduxLoadFlag,
   };
 };
+const MapMarker = ({ text }) =>
+  <div style={{
+    color: 'white',
+    background: 'grey',
+    padding: '15px 10px',
+    display: 'inline-flex',
+    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: '100%',
+    transform: 'translate(-50%, -50%)'
+  }}>
+    {text}
+  </div>;
 class DashboardClass extends React.Component {
   constructor(props) {
     super(props);
+    this.dateUtility = new DateFnsUtils();
     this._isMounted = false;
     this.state = {
       value: 0,
@@ -111,14 +143,840 @@ class DashboardClass extends React.Component {
       totalRecords: "3000",
       pollutionData: this.props.campaings ? this.props.campaings : [],
       reduxLoadFlag: false,
+      pollutionChartOption: {},
+      highChartOption: {},
+      tempHighChart: {},
+      allDataHighChart: {},
+      center: { lat: 26.263863, lng: 73.008957 },
+      zoom: 11,
+      selectedDate: new Date(),
+      todayItems: 20,
+      allItems: 200,
+      latestData: {},
+      todayData: [],
+      allData: [],
+      pollGraphType: "co2",
+      todayDate: new Date(),
+      endDate: null,
+      minSDate: new Date("10/18/2020"),
+      minEDate: new Date(),
+      maxSDate: new Date(),
+      maxEDate: new Date(),
+      formErrors: {
+        startDate: "",
+        endDate: "",
+      },
+      startDateValid: false,
+      endDateValid: false,
     };
     this.handleGraphData = this.handleGraphData.bind(this)
+    this.handlePollutionGraphData = this.handlePollutionGraphData.bind(this)
+    this.newHighPollChart = this.newHighPollChart.bind(this)
+    this.tempHighChart = this.tempHighChart.bind(this)
+    this.allDataHighChart = this.allDataHighChart.bind(this)
+
+    this.getLastData = this.getLastData.bind(this)
+    this.getTodayData = this.getTodayData.bind(this)
+    this.getAllData = this.getAllData.bind(this)
+
+    this.handleStartDate = this.handleStartDate.bind(this);
+    this.handleStartDateError = this.handleStartDateError.bind(this);
   }
 
+  getToday(dateValue, server) {
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"
+    ];
+    let today = new Date(dateValue);
+    let dd = today.getDate();
+    let mm = today.getMonth() + 1;
+    let mName = monthNames[today.getMonth()];
+    const yyyy = today.getFullYear();
+    const hh = today.getHours();
+    const min = today.getMinutes();
+    const sec = today.getSeconds();
+    if (dd < 10) {
+      dd = `0${dd}`;
+    }
+    if (mm < 10) {
+      mm = `0${mm}`;
+    }
+    if (server) {
+      return `${dd}-${mm}-${yyyy}`;
+    }
+    return `${dd} ${mName} ${hh}:${min}:${sec}`;
+  }
   componentDidMount() {
-    let chart = am4core.create("chartdiv", am4charts.XYChart);
 
-    chart.paddingRight = 20;
+    this.getLastData();
+    this.getTodayData();
+    this.getAllData();
+
+    // this.handleGraphData();
+    // this.handlePollutionGraphData();
+    // this.newHighPollChart();
+    // this.tempHighChart();
+  }
+
+  async getLastData() {
+    let apiUrl = "http://35.193.238.179:9090/api/pollution/top-data";
+    let lastdata = await userService.fetchGlobalApisWithoutAuth(apiUrl);
+    if (lastdata && lastdata.max_co2) {
+      if (lastdata.max_co2 <= 300) {
+        lastdata.maxPollLevel = "Normal"
+      } else if (lastdata.max_co2 > 300 && lastdata.max_co2 < 450) {
+        lastdata.maxPollLevel = "Average"
+      } else if (lastdata.max_co2 > 450 && lastdata.max_co2 < 750) {
+        lastdata.maxPollLevel = "Medium"
+      } else if (lastdata.max_co2 > 750 && lastdata.max_co2 < 950) {
+        lastdata.maxPollLevel = "High"
+      } else if (lastdata.max_co2 > 950 && lastdata.max_co2 < 1400) {
+        lastdata.maxPollLevel = "Extreme High"
+      } else {
+        lastdata.maxPollLevel = "Pollution Warning"
+      }
+
+      if (lastdata.min_co2 <= 300) {
+        lastdata.minPollLevel = "Normal"
+      } else if (lastdata.min_co2 > 300 && lastdata.min_co2 < 450) {
+        lastdata.minPollLevel = "Average"
+      } else if (lastdata.min_co2 > 450 && lastdata.min_co2 < 750) {
+        lastdata.minPollLevel = "Medium"
+      } else if (lastdata.min_co2 > 750 && lastdata.min_co2 < 950) {
+        lastdata.minPollLevel = "High"
+      } else if (lastdata.min_co2 > 950 && lastdata.min_co2 < 1400) {
+        lastdata.minPollLevel = "Extreme High"
+      } else {
+        lastdata.minPollLevel = "Pollution Warning"
+      }
+
+      if (lastdata.pollution.co2 <= 300) {
+        lastdata.pollLevel = "Normal"
+        lastdata.pollColor = "green_color"
+        lastdata.pollColor = "light_green_color"
+      } else if (lastdata.pollution.co2 > 300 && lastdata.pollution.co2 < 450) {
+        lastdata.pollLevel = "Average"
+        lastdata.pollColor = "light_green_color"
+      } else if (lastdata.pollution.co2 > 450 && lastdata.pollution.co2 < 750) {
+        lastdata.pollLevel = "Medium"
+        lastdata.pollColor = "light_orange_color"
+      } else if (lastdata.pollution.co2 > 750 && lastdata.pollution.co2 < 950) {
+        lastdata.pollLevel = "High"
+        lastdata.pollColor = "orange_color"
+      } else if (lastdata.pollution.co2 > 950 && lastdata.pollution.co2 < 1400) {
+        lastdata.pollLevel = "Extreme High"
+        lastdata.pollColor = "light_red_color"
+      } else {
+        lastdata.pollLevel = "Pollution Warning"
+        lastdata.pollColor = "red_color"
+        lastdata.pollColor = "light_green_color"
+      }
+
+      if (lastdata.max_temperature <= 0) {
+        lastdata.maxTempLevel = "Slow"
+      } else if (lastdata.max_temperature > 0 && lastdata.max_temperature < 10) {
+        lastdata.maxTempLevel = "Cold"
+      } else if (lastdata.max_temperature > 10 && lastdata.max_temperature < 20) {
+        lastdata.maxTempLevel = "Sunny"
+      } else if (lastdata.max_temperature > 20 && lastdata.max_temperature < 30) {
+        lastdata.maxTempLevel = "Hot & Sunny"
+      } else if (lastdata.max_temperature > 30 && lastdata.max_temperature < 40) {
+        lastdata.maxTempLevel = "Humidity & Sunny"
+      } else {
+        lastdata.maxTempLevel = "Extreme Hot & Sunny"
+      }
+
+      if (lastdata.min_temperature <= 0) {
+        lastdata.minTempLevel = "Slow"
+      } else if (lastdata.min_temperature > 0 && lastdata.min_temperature < 10) {
+        lastdata.minTempLevel = "Cold"
+      } else if (lastdata.min_temperature > 10 && lastdata.min_temperature < 20) {
+        lastdata.minTempLevel = "Sunny"
+      } else if (lastdata.min_temperature > 20 && lastdata.min_temperature < 30) {
+        lastdata.minTempLevel = "Hot & Sunny"
+      } else if (lastdata.min_temperature > 30 && lastdata.min_temperature < 40) {
+        lastdata.minTempLevel = "Humidity & Sunny"
+      } else {
+        lastdata.minTempLevel = "Extreme Hot & Sunny"
+      }
+
+      if (lastdata.pollution.temperature <= 0) {
+        lastdata.tempLevel = "Slow"
+      } else if (lastdata.pollution.temperature > 0 && lastdata.pollution.temperature < 10) {
+        lastdata.tempLevel = "Cold"
+      } else if (lastdata.pollution.temperature > 10 && lastdata.pollution.temperature < 20) {
+        lastdata.tempLevel = "Sunny"
+      } else if (lastdata.pollution.temperature > 20 && lastdata.pollution.temperature < 30) {
+        lastdata.tempLevel = "Hot & Sunny"
+      } else if (lastdata.pollution.temperature > 30 && lastdata.pollution.temperature < 40) {
+        lastdata.tempLevel = "Humidity & Sunny"
+      } else {
+        lastdata.tempLevel = "Extreme Hot & Sunny"
+      }
+    }
+    this.setState({
+      latestData: lastdata
+    })
+    console.log(lastdata)
+  }
+
+  async getTodayData() {
+    let todayDate = new Date();
+    let dateVal = this.getToday(this.state.selectedDate, true);
+
+    let apiUrl = "http://35.193.238.179:9090/api/pollution/data?from_date=" + dateVal + "&to_date=" + dateVal + "&page=0&size=" + this.state.todayItems + "&sort=created,desc";
+    let todayData = await userService.fetchGlobalApisWithoutAuth(apiUrl);
+    this.setState({
+      todayData: todayData
+    }, () => {
+      this.newHighPollChart(); this.tempHighChart()
+    })
+    console.log(todayData)
+  }
+  tempHighChart() {
+    let pollutionDataArr = [];
+    let chartLabels = [];
+    let colorsLabels = [];
+    let pollutionLabels = [];
+    let dayWiseData = [];
+    if (this.state.todayData && this.state.todayData.length) {
+      this.state.todayData.map((pData, key) => {
+        var day = new Date(pData.timestamp).getDate();
+
+        let todayVal = this.getToday(new Date(pData.timestamp));
+
+        if (dayWiseData && dayWiseData[day]) {
+          // console.log("main if", key)
+          let dayData = dayWiseData[day];
+          dayData['data'].push(pData.co2)
+          dayWiseData.map((dData, key) => {
+
+            // console.log(dData)
+
+
+
+            // if (dData && dData["day"] && dData['timestamp']) {
+            //   console.log("second if", key)
+            //   var dayLocal = new Date(dData['timestamp']).getDate();
+            //   if (dData["day"] && dData["day"] == day) {
+            //     console.log("third if", key)
+            //     // dData['data'].push(pData.co2)
+
+
+
+            //   } else {
+            //     console.log("third else", key)
+            //     let tempData = []
+            //     tempData.data = [pData.co2]
+            //     tempData.day = day
+            //     tempData.timestamp = pData.timestamp
+            //     tempData.name = pData.timestamp
+            //     dayWiseData[day] = tempData
+            //   }
+            // } else {
+            //   console.log("second else", key)
+            //   let tempData = []
+            //   tempData.data = [pData.co2]
+            //   tempData.day = day
+            //   tempData.timestamp = pData.timestamp
+            //   tempData.name = pData.timestamp
+            //   dayWiseData[day] = tempData
+            // }
+
+          })
+        } else {
+          // console.log("main else", key)
+          let tempData = []
+          tempData.data = [pData.co2]
+          tempData.day = day
+          tempData.timestamp = pData.timestamp
+          tempData.name = pData.timestamp
+          dayWiseData[day] = tempData
+        }
+
+        let tempPollData = {}
+        tempPollData.y = pData.temperature
+        tempPollData.pollution = pData.pollution
+        tempPollData.dayTemp = "Normal"
+        tempPollData.timestamp = new Date(pData.timestamp)
+        if (pData.temperature > 32) {
+          tempPollData.marker = {
+            symbol: 'url(https://www.highcharts.com/samples/graphics/sun.png)'
+          }
+          tempPollData.dayTemp = "Sunny"
+        } else if (pData.temperature > 5 && pData.temperature <= 10) {
+          tempPollData.marker = {
+            symbol: 'url(https://www.highcharts.com/samples/graphics/snow.png)'
+          }
+          tempPollData.dayTemp = "Snow"
+        }
+
+        // pollutionDataArr.push(pData.co2);
+        pollutionDataArr.push(tempPollData);
+        pollutionLabels.push(pData.pollution);
+        chartLabels.push(todayVal);
+        let colorCode = ""
+        if (pData.temperature <= 30) {
+          colorCode = "#27b35a"
+        } else if (pData.temperature > 30 && pData.temperature <= 40) {
+          colorCode = "#27b35a"
+        } else if (pData.temperature > 40 && pData.temperature <= 50) {
+          colorCode = "#2cb327"
+        } else if (pData.temperature > 50 && pData.temperature <= 60) {
+          colorCode = "#9ab00a"
+        } else if (pData.temperature > 60 && pData.temperature <= 70) {
+          colorCode = "#b0120a"
+        } else {
+          colorCode = "#b0120a"
+        }
+        colorsLabels.push(colorCode);
+      })
+      // console.log(colorsLabels)
+    }
+
+    let formatedDailyData = []
+    dayWiseData.map(dailyData => {
+      // formatedDailyData.push(dailyData)
+      formatedDailyData = [...formatedDailyData, dailyData]
+    })
+
+    let tempHighChart = {
+      chart: {
+        type: 'spline',
+        // inverted: true,
+        // zoom: "xy"
+      },
+      title: {
+        text: 'Temperature (°C) Graph'
+      },
+      subtitle: {
+        text: 'Day Wise Temperature Graph'
+      },
+      xAxis: {
+        title: {
+          text: 'Date & Time'
+        },
+        type: 'category',
+        categories: chartLabels,
+        // categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        labels: {
+          formatter: function () {
+            return chartLabels[this.pos] + '°';
+          }
+        }
+      },
+      yAxis: {
+        title: {
+          text: 'Temperature (°C)'
+        },
+        type: 'logarithmic',
+        min: 1,
+        labels: {
+          overflow: 'justify'
+        }
+      },
+      tooltip: {
+        useHTML: true,
+        formatter: function () {
+          console.log(this, this.point.low); // just to see , what data you can access
+          let tempValue = this.point.dayTemp;
+          let colorValue = this.point.color;
+          let yValue = this.point.y;
+          let nameValue = this.series.name;
+          let keyValue = this.point.timestamp;
+          // return '<b>' + this.x +
+          //   '</b>: <b>' + barValue + ' %</b>';
+          return '<span style="font-size:10px">' + keyValue + '</span><table><tr><td style="padding:0">' + nameValue + ': </td>' +
+            '<td style="padding:0"><b>' + yValue + ' (°C)</b></td></tr><tr><td style="color:' + colorValue + ';padding:0">' + tempValue + '</td></tr></table>'
+
+        }
+      },
+      // tooltip: {
+      //   headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+      //   pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+      //     '<td style="padding:0"><b>{point.y:.1f} unit</b></td><td>{series.pollutionLabels}</td></tr>',
+      //   footerFormat: '</table>',
+      //   shared: true,
+      //   useHTML: true
+      // },
+      // colors: ['#b0120a', '#ffab91', '#ED5534', '#433C39', '#545150', '#B09187', '#B087A0'],
+      colors: colorsLabels,
+      pollutionLabels: pollutionLabels,
+      plotOptions: {
+        columnrange: {
+          dataLabels: {
+            enabled: true,
+            format: '{y}°C'
+          },
+          colorByPoint: true
+        },
+        series: {
+          animation: false
+        },
+        column: {
+          colorByPoint: true
+        },
+        line: {
+          dataLabels: {
+            enabled: true,
+            format: '{y}°C'
+          },
+          enableMouseTracking: true
+        },
+        spline: {
+          marker: {
+            radius: 4,
+            lineColor: '#666666',
+            lineWidth: 1
+          }
+        }
+      },
+      legend: {
+        enabled: true
+      },
+      credits: {
+        enabled: false
+      },
+      series: [{
+        name: 'Temperature',
+        data: pollutionDataArr,
+      }]
+    };
+    this.setState({
+      tempHighChart: tempHighChart,
+    })
+  }
+  newHighPollChart() {
+    let pollutionDataArr = [];
+    let chartLabels = [];
+    let colorsLabels = [];
+    let pollutionLabels = [];
+    let dayWiseData = [];
+    if (this.state.todayData && this.state.todayData.length) {
+      this.state.todayData.map((pData, key) => {
+        var day = new Date(pData.timestamp).getDate();
+        // if (key > 10) {
+        //   return
+        // }
+        let todayVal = this.getToday(new Date(pData.timestamp));
+        if (dayWiseData && dayWiseData[day]) {
+          // console.log("main if", key)
+          let dayData = dayWiseData[day];
+          dayData['data'].push(pData.co2)
+          dayWiseData.map((dData, key) => {
+
+            // console.log(dData)
+
+
+
+            // if (dData && dData["day"] && dData['timestamp']) {
+            //   console.log("second if", key)
+            //   var dayLocal = new Date(dData['timestamp']).getDate();
+            //   if (dData["day"] && dData["day"] == day) {
+            //     console.log("third if", key)
+            //     // dData['data'].push(pData.co2)
+
+
+
+            //   } else {
+            //     console.log("third else", key)
+            //     let tempData = []
+            //     tempData.data = [pData.co2]
+            //     tempData.day = day
+            //     tempData.timestamp = pData.timestamp
+            //     tempData.name = pData.timestamp
+            //     dayWiseData[day] = tempData
+            //   }
+            // } else {
+            //   console.log("second else", key)
+            //   let tempData = []
+            //   tempData.data = [pData.co2]
+            //   tempData.day = day
+            //   tempData.timestamp = pData.timestamp
+            //   tempData.name = pData.timestamp
+            //   dayWiseData[day] = tempData
+            // }
+
+          })
+        } else {
+          // console.log("main else", key)
+          let tempData = []
+          tempData.data = [pData.co2]
+          tempData.day = day
+          tempData.timestamp = pData.timestamp
+          tempData.name = pData.timestamp
+          dayWiseData[day] = tempData
+        }
+
+        let tempPollData = {}
+        let colorCode = ""
+        if (this.state.pollGraphType == "co2") {
+          tempPollData.y = pData.co2
+          tempPollData.pollution = pData.pollution
+          tempPollData.timestamp = new Date(pData.timestamp)
+
+          // pollutionDataArr.push(pData.co2);
+          pollutionDataArr.push(tempPollData);
+          pollutionLabels.push(pData.pollution);
+          chartLabels.push(todayVal);
+          if (pData.co2 <= 300) {
+            colorCode = "#27b35a"
+          } else if (pData.co2 > 300 && pData.co2 <= 400) {
+            colorCode = "#27b35a"
+          } else if (pData.co2 > 400 && pData.co2 <= 500) {
+            colorCode = "#2cb327"
+          } else if (pData.co2 > 500 && pData.co2 <= 600) {
+            colorCode = "#9ab00a"
+          } else if (pData.co2 > 600 && pData.co2 <= 700) {
+            colorCode = "#b0120a"
+          } else {
+            colorCode = "#b0120a"
+          }
+        } else {
+          tempPollData.y = pData.tvoc
+          tempPollData.pollution = pData.pollution
+          tempPollData.timestamp = new Date(pData.timestamp)
+
+          // pollutionDataArr.push(pData.co2);
+          pollutionDataArr.push(tempPollData);
+          pollutionLabels.push(pData.pollution);
+          chartLabels.push(todayVal);
+          if (pData.tvoc <= 5) {
+            colorCode = "#27b35a"
+          } else if (pData.tvoc > 5 && pData.tvoc <= 8) {
+            colorCode = "#27b35a"
+          } else if (pData.tvoc > 8 && pData.tvoc <= 15) {
+            colorCode = "#2cb327"
+          } else if (pData.tvoc > 15 && pData.tvoc <= 30) {
+            colorCode = "#9ab00a"
+          } else if (pData.tvoc > 30 && pData.tvoc <= 50) {
+            colorCode = "#b0120a"
+          } else {
+            colorCode = "#b0120a"
+          }
+        }
+
+
+        colorsLabels.push(colorCode);
+      })
+      // console.log(colorsLabels)
+    }
+
+    let formatedDailyData = []
+    dayWiseData.map(dailyData => {
+      // formatedDailyData.push(dailyData)
+      formatedDailyData = [...formatedDailyData, dailyData]
+    })
+
+    let highChartOption = {
+      chart: {
+        type: 'column',
+        // inverted: true,
+        // zoom: "xy"
+      },
+      title: {
+        text: 'Pollution Graph'
+      },
+      subtitle: {
+        text: 'Day Wise Pollution Graph'
+      },
+      xAxis: {
+        title: {
+          text: 'Date & Time'
+        },
+        type: 'category',
+        categories: chartLabels,
+        labels: {
+          formatter: function () {
+            return chartLabels[this.pos]
+          }
+        }
+      },
+      yAxis: {
+        title: {
+          text: 'Units'
+        },
+        type: 'logarithmic',
+        min: 1,
+        labels: {
+          overflow: 'justify'
+        }
+      },
+      tooltip: {
+        useHTML: true,
+        formatter: function () {
+          console.log(this, this.point.low); // just to see , what data you can access
+          let pollValue = this.point.pollution;
+          let colorValue = this.point.color;
+          let yValue = this.point.y;
+          let nameValue = this.series.name;
+          let keyValue = this.point.timestamp;
+          // return '<b>' + this.x +
+          //   '</b>: <b>' + barValue + ' %</b>';
+          return '<span style="font-size:10px">' + keyValue + '</span><table><tr><td style="padding:0">' + nameValue + ': </td>' +
+            '<td style="padding:0"><b>' + yValue + ' ppm</b></td></tr><tr><td style="color:' + colorValue + ';padding:0">' + pollValue + '</td></tr></table>'
+
+        }
+      },
+      // tooltip: {
+      //   headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+      //   pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+      //     '<td style="padding:0"><b>{point.y:.1f} unit</b></td><td>{series.pollutionLabels}</td></tr>',
+      //   footerFormat: '</table>',
+      //   shared: true,
+      //   useHTML: true
+      // },
+      // colors: ['#b0120a', '#ffab91', '#ED5534', '#433C39', '#545150', '#B09187', '#B087A0'],
+      colors: colorsLabels,
+      pollutionLabels: pollutionLabels,
+      plotOptions: {
+        columnrange: {
+          dataLabels: {
+            // enabled: true,
+            //  format: '{y}°C'
+          },
+          colorByPoint: true
+        },
+        series: {
+          animation: false
+        },
+        column: {
+          colorByPoint: true
+        }
+      },
+      legend: {
+        enabled: true
+      },
+      credits: {
+        enabled: false
+      },
+      series: [{
+        name: 'Pollution',
+        data: pollutionDataArr,
+      }]
+    };
+    this.setState({
+      highChartOption: highChartOption,
+    })
+  }
+  async getAllData() {
+    let apiUrl = "http://35.193.238.179:9090/api/pollution/data?page=0&size=" + this.state.allItems + "&sort=created,desc";
+    let allData = await userService.fetchGlobalApisWithoutAuth(apiUrl);
+    this.setState({
+      allData: allData
+    }, () => this.allDataHighChart())
+    console.log(allData)
+  }
+  allDataHighChart() {
+    let pollutionDataArr = [];
+    let chartLabels = [];
+    let colorsLabels = [];
+    let pollutionLabels = [];
+    let dayWiseData = [];
+    if (this.state.allData && this.state.allData.length) {
+      this.state.allData.map((pData, key) => {
+        var day = new Date(pData.timestamp).getDate();
+
+        let todayVal = this.getToday(new Date(pData.timestamp));
+
+        let allDataObj = [];
+
+        if (pollutionDataArr && pollutionDataArr.length) {
+          console.log("if all")
+          pollutionDataArr = pollutionDataArr.filter(function (pollData, cKey) {
+            let tmpData = pollData
+            if (pollData.name == "CO2 (ppm)") {
+              let tmpData = pollData.data;
+              tmpData.push(pData.co2)
+              tmpData.data = tmpData;
+            }
+            if (pollData.name == "tVOC (ppm)") {
+              let tmpData = pollData.data;
+              tmpData.push(pData.tvoc)
+              tmpData.data = tmpData;
+            }
+            if (pollData.name == "Humidity (g.kg-1)") {
+              let tmpData = pollData.data;
+              tmpData.push(pData.humidity)
+              tmpData.data = tmpData;
+            }
+            if (pollData.name == "Pressure (Pa)") {
+              let tmpData = pollData.data;
+              tmpData.push(pData.pressure)
+              tmpData.data = tmpData;
+            }
+            if (pollData.name == "Temperature (°C)") {
+              let tmpData = pollData.data;
+              tmpData.push(pData.temperature)
+              tmpData.data = tmpData;
+            }
+            return tmpData
+          });
+        } else {
+          console.log("else all")
+          let co2Data = {}
+          co2Data.data = [pData.co2]
+          co2Data.name = "CO2 (ppm)"
+          co2Data.color = '#0066FF'
+          co2Data.timestamp = new Date(pData.timestamp)
+
+          let tVOCData = {}
+          tVOCData.data = [pData.tvoc]
+          tVOCData.name = "tVOC (ppm)"
+          tVOCData.color = '#FF0000'
+          tVOCData.timestamp = new Date(pData.timestamp)
+
+          let humidityData = {}
+          humidityData.data = [pData.humidity]
+          humidityData.name = "Humidity (g.kg-1)"
+          humidityData.color = '#0a7eb0'
+          humidityData.timestamp = new Date(pData.timestamp)
+
+          let pressureData = {}
+          pressureData.data = [pData.pressure]
+          pressureData.name = "Pressure (Pa)"
+          pressureData.color = '#b00a60'
+          pressureData.timestamp = new Date(pData.timestamp)
+
+          let temperatureData = {}
+          temperatureData.data = [pData.temperature]
+          temperatureData.name = "Temperature (°C)"
+          temperatureData.color = '#a20ab0'
+          temperatureData.timestamp = new Date(pData.timestamp)
+
+          // #b0120a', '#ffab91', '#ED5534', '#433C39', '#545150',
+
+          pollutionDataArr.push(co2Data)
+          pollutionDataArr.push(tVOCData)
+          pollutionDataArr.push(humidityData)
+          pollutionDataArr.push(pressureData)
+          pollutionDataArr.push(temperatureData)
+        }
+
+        pollutionLabels.push(pData.pollution);
+        chartLabels.push(todayVal);
+      })
+      // console.log(colorsLabels)
+    }
+
+    console.log(pollutionDataArr)
+
+    let formatedDailyData = []
+    dayWiseData.map(dailyData => {
+      // formatedDailyData.push(dailyData)
+      formatedDailyData = [...formatedDailyData, dailyData]
+    })
+
+    let allDataHighChart = {
+      // chart: {
+      //   type: 'spline',
+      //   // inverted: true,
+      //   // zoom: "xy"
+      // },
+      title: {
+        text: 'Sequence Data'
+      },
+      subtitle: {
+        text: 'Day Wise Graph'
+      },
+      xAxis: {
+        accessibility: {
+          rangeDescription: 'Measurement'
+        },
+        type: 'category',
+        categories: chartLabels,
+      },
+      yAxis: {
+        title: {
+          text: 'Units'
+        },
+      },
+      tooltip: {
+        useHTML: true,
+        formatter: function () {
+          console.log(this, this.point.low); // just to see , what data you can access
+          let pollValue = this.point.pollution;
+          let colorValue = this.point.color;
+          let yValue = this.point.y;
+          let nameValue = this.series.name;
+          let keyValue = this.point.timestamp;
+          // return '<b>' + this.x +
+          //   '</b>: <b>' + barValue + ' %</b>';
+          return '<span style="color:' + colorValue + ';padding:0;font-size:10px">Measurement</span><table><tr><td style="padding:0">' + nameValue + ': </td>' +
+            '<td style="padding:0"><b>' + yValue + '</b></td></tr></table>'
+
+        }
+      },
+      // tooltip: {
+      //   headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+      //   pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+      //     '<td style="padding:0"><b>{point.y:.1f} unit</b></td><td>{series.pollutionLabels}</td></tr>',
+      //   footerFormat: '</table>',
+      //   shared: true,
+      //   useHTML: true
+      // },
+      // colors: ['#b0120a', '#ffab91', '#ED5534', '#433C39', '#545150', '#B09187', '#B087A0'],
+      colors: colorsLabels,
+      pollutionLabels: pollutionLabels,
+      plotOptions: {
+        series: {
+          label: {
+            connectorAllowed: false
+          },
+        },
+        columnrange: {
+          colorByPoint: true
+        },
+      },
+      legend: {
+        layout: 'vertical',
+        align: 'right',
+        verticalAlign: 'middle'
+      },
+      column: {
+        colorByPoint: true
+      },
+      credits: {
+        enabled: false
+      },
+      // series: [{
+      //   name: 'Measurement',
+      //   data: pollutionDataArr,
+      // }],
+      series: pollutionDataArr,
+      responsive: {
+        rules: [{
+          condition: {
+            maxWidth: 500
+          },
+          chartOptions: {
+            legend: {
+              layout: 'horizontal',
+              align: 'center',
+              verticalAlign: 'bottom'
+            }
+          }
+        }]
+      }
+    };
+    this.setState({
+      allDataHighChart: allDataHighChart,
+    })
+  }
+
+  fetchData() {
+    // let apiUrl = "http://35.193.238.179:9090/api/pollution/data";
+    // let pollutionData = userService.fetchGlobalApisWithoutAuth(apiUrl);
+    // console.log(pollutionData)
+    // this.setState({
+    //   pollutionData: pollutionData,
+    // })
+  }
+
+  handleGraphData() {
+    let pollutionData = am4core.create("pollutionData", am4charts.XYChart);
+    // chart.paddingRight = 20;
+    pollutionData.paddingRight = this.props.paddingRight;
 
     let data = [];
     if (this.state.pollutionData && this.state.pollutionData.length) {
@@ -133,41 +991,92 @@ class DashboardClass extends React.Component {
       // }
     }
 
-    chart.data = data;
+    pollutionData.data = data;
 
-    let dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+    let dateAxis = pollutionData.xAxes.push(new am4charts.DateAxis());
     dateAxis.renderer.grid.template.location = 0;
 
-    let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+    let valueAxis = pollutionData.yAxes.push(new am4charts.ValueAxis());
     valueAxis.tooltip.disabled = true;
     valueAxis.renderer.minWidth = 35;
 
-    let series = chart.series.push(new am4charts.LineSeries());
+    let series = pollutionData.series.push(new am4charts.LineSeries());
     series.dataFields.dateX = "date";
     series.dataFields.valueY = "value";
 
     series.tooltipText = "{valueY.value}";
-    chart.cursor = new am4charts.XYCursor();
+    pollutionData.cursor = new am4charts.XYCursor();
+    pollutionData.cursor.behavior = "none";
+    pollutionData.seriesContainer.draggable = false;
+    pollutionData.seriesContainer.resizable = false;
 
-    let scrollbarX = new am4charts.XYChartScrollbar();
-    scrollbarX.series.push(series);
-    chart.scrollbarX = scrollbarX;
+    pollutionData.seriesContainer.draggable = false;
+    pollutionData.seriesContainer.resizable = false;
 
-    this.chart = chart;
+    // let scrollbarX = new am4charts.XYChartScrollbar();
+    // scrollbarX.series.push(series);
+    // pollutionData.scrollbarX = scrollbarX;
+    // scrollbarX.interactionsEnabled = false;
+    this.pollutionData = pollutionData;
 
-    // this.fetchData();
   }
-  fetchData() {
-    // let apiUrl = "http://35.193.238.179:9090/api/pollution/data";
-    // let pollutionData = userService.fetchGlobalApisWithoutAuth(apiUrl);
-    // console.log(pollutionData)
-    // this.setState({
-    //   pollutionData: pollutionData,
-    // })
-  }
+  handlePollutionGraphData() {
+    // Create chart instance
+    let pollutionDataLine = am4core.create("pollutionDataLine", am4charts.XYChart);
+    pollutionDataLine.paddingRight = this.props.paddingRight;
 
-  handleGraphData() {
+    let pollutionDataArr = [];
+    if (this.state.pollutionData && this.state.pollutionData.length) {
+      this.state.pollutionData.map((pData, key) => {
+        var day = new Date(pData.timestamp).getDate();
+        pollutionDataArr.push({
+          // date: "" + new Date(pData.timestamp),
+          // name: "Pollution",
+          // units: pData.co2,
 
+          "country": "Day: " + (day),
+          "litres": pData.co2,
+          "units": pData.tvoc,
+          "pollValue": pData.pollution,
+          "measureDate": pData.timestamp,
+        });
+      })
+
+      // let visits = 10;
+      // for (let i = 1; i < 366; i++) {
+      //   visits += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 10);
+      //   data.push({ date: new Date(2018, 0, i), name: "name" + i, value: visits });
+      // }
+    }
+
+    pollutionDataLine.data = pollutionDataArr;
+
+    // Create axes
+    let categoryAxis = pollutionDataLine.xAxes.push(new am4charts.CategoryAxis());
+    categoryAxis.dataFields.category = "country";
+    categoryAxis.title.text = "Countries";
+
+    let valueAxis = pollutionDataLine.yAxes.push(new am4charts.ValueAxis());
+    valueAxis.title.text = "Litres sold (M)";
+
+    // Create series
+    var series = pollutionDataLine.series.push(new am4charts.ColumnSeries());
+    series.dataFields.valueY = "litres";
+    series.dataFields.categoryX = "country";
+    series.name = "Sales";
+    series.pollValue = "pollValue";
+    series.measureDate = "measureDate";
+    series.columns.template.tooltipText = "Pollution Data\nPollution: {pollValue}\nDate: {measureDate}";
+    series.columns.template.fill = am4core.color("#104547");
+
+    var series2 = pollutionDataLine.series.push(new am4charts.LineSeries());
+    series2.name = "Units";
+    series2.stroke = am4core.color("#CDA2AB");
+    series2.strokeWidth = 3;
+    series2.dataFields.valueY = "units";
+    series2.dataFields.categoryX = "country";
+
+    this.pollutionDataLine = pollutionDataLine
   }
 
   componentWillUnmount() {
@@ -179,21 +1088,68 @@ class DashboardClass extends React.Component {
     if (oldProps.paddingRight !== this.props.paddingRight) {
       this.chart.paddingRight = this.props.paddingRight;
     }
+    // if (this.chart.paddingRight !== this.props.paddingRight) {
+    //   this.chart.paddingRight = this.props.paddingRight;
+    // }
 
+    console.log("outside")
     if (this.props.reduxLoadFlag != undefined && this.state.reduxLoadFlag != this.props.reduxLoadFlag) {
+      console.log("inside", this.props)
       let campaings = [];
       let userInfo = {};
       if (this.props.campaings) {
         let campaingsList = this.props.campaings;
         campaings = (campaingsList) ? campaingsList : [];
-        if (this.chart) {
-          this.chart.data = campaings;
+        if (this.pollutionData) {
+          let data = [];
+          campaings.map((pData, key) => {
+            data.push({ date: new Date(pData.timestamp), name: "Pollution", value: pData.co2 });
+          })
+          this.pollutionData.data = data;
+          this.pollutionData.paddingRight = this.props.paddingRight;
+          // console.log("insout", this.props, campaings)
         }
       }
       this.setState({
         pollutionData: campaings,
+        reduxLoadFlag: this.props.reduxLoadFlag,
       })
     }
+  }
+  handleUserInput = e => {
+    const name = e.target.name;
+    const value = e.target.value;
+
+    this.setState({ [name]: value }, () => this.getTodayData());
+  };
+  handleUserInputAll = e => {
+    const name = e.target.name;
+    const value = e.target.value;
+
+    this.setState({ [name]: value }, () => this.getAllData());
+  };
+  handleStartDate = value => {
+    let startDate = true;
+    if (value == null || !this.dateUtility.isValid(value)) {
+      startDate = false;
+    }
+    if (startDate) {
+      this.setState({
+        selectedDate: value,
+      }, () => this.getTodayData())
+
+    }
+    this.setState(
+      {
+        startDate: value,
+        startDateValid: startDate,
+      }
+    );
+  };
+  handleStartDateError(error, value) {
+    this.setState({
+      startDateValid: error || value == "" || value == null ? false : true
+    });
   }
   render() {
     const { classes } = this.props;
@@ -235,20 +1191,25 @@ class DashboardClass extends React.Component {
       lastPollutionTime,
       totalRecords,
       pollutionData,
+      highChartOption,
+      tempHighChart,
+      allDataHighChart,
+      latestData,
     } = this.state;
     return (
       <div>
         {/* <NotificationContainer/> */}
-        <div id="chartdiv" style={{ width: "100%", height: "500px" }}></div>
         <GridContainer>
           <GridItem xs={12} sm={6}>
-            <Card className={"dash-tiles"}>
+            <Card className={`dash-tiles ${latestData && latestData.pollColor ? latestData.pollColor : ""}`}>
               <CardHeader color="success" stats icon>
-                <CardIcon color="success" className={test} style={styletest}>
-                  <img src={featured} alt="logo" />
+                <CardIcon color="success" className={"box-image-cover"} style={styletest}>
+                  <img src={flatIcon} alt="logo" />
                 </CardIcon>
                 <p className={classes.cardCategory}>Current Pollution</p>
-                <h3 className={classes.cardTitle}>{currPolution}</h3>
+                <h3 className={classes.cardTitle}>{latestData && latestData.pollLevel ? latestData.pollLevel : "Normal"}</h3>
+                <p>Max Pollution: {latestData && latestData.maxPollLevel ? latestData.maxPollLevel : "Normal"}</p>
+                <p>Min Pollution: {latestData && latestData.minPollLevel ? latestData.minPollLevel : "Normal"}</p>
               </CardHeader>
               <CardFooter stats>
                 <div className={classes.stats}>
@@ -258,7 +1219,7 @@ class DashboardClass extends React.Component {
                     style={clock_style}
                     alt="time"
                   />
-                  <span>{lastPollutionTime}</span>
+                  <span>{latestData.pollution && latestData.pollution.created}</span>
                 </div>
               </CardFooter>
             </Card>
@@ -269,8 +1230,10 @@ class DashboardClass extends React.Component {
                 <CardIcon color="danger" className={test1} style={styletest1}>
                   <img src={advert} alt="logo" />
                 </CardIcon>
-                <p className={classes.cardCategory}>Number of Records</p>
-                <h3 className={classes.cardTitle}>{pollutionData.length}</h3>
+                <p className={classes.cardCategory}>Temperature</p>
+                <h3 className={classes.cardTitle}>{latestData && latestData.tempLevel ? latestData.tempLevel + " (" + latestData.pollution.temperature + " °C)" : "Normal"}</h3>
+                <p>Max Temperature: {latestData && latestData.maxTempLevel ? latestData.maxTempLevel + " (" + latestData.max_temperature + " °C)" : "Normal"}</p>
+                <p>Min Temperature: {latestData && latestData.minTempLevel ? latestData.minTempLevel + " (" + latestData.min_temperature + " °C)" : "Normal"}</p>
               </CardHeader>
               <CardFooter stats>
                 <div className={classes.stats}>
@@ -280,10 +1243,230 @@ class DashboardClass extends React.Component {
                     style={clock_style}
                     alt="time"
                   />
-                  <span>{lastPollutionTime}</span>
+                  <span>{latestData.pollution && latestData.pollution.created}</span>
                 </div>
               </CardFooter>
             </Card>
+          </GridItem>
+        </GridContainer>
+        <GridContainer>
+          <FormGroup>
+            <TextField
+              label="Graph Type"
+              select
+              InputLabelProps={{ className: "required-label" }}
+              name="pollGraphType"
+              autoComplete="off"
+              // value={this.state.pollGraphType}
+              data-validators="isRequired,isAlpha"
+              // onChange={this.handleUserInput}
+              variant="outlined"
+              size="small"
+              margin="dense"
+              SelectProps={{
+                multiple: false,
+                value: this.state.pollGraphType,
+                onChange: this.handleUserInput
+              }}
+            >
+              <MenuItem
+                value={"co2"}
+              >
+                CO2
+              </MenuItem>
+              <MenuItem
+                value={"tvoc"}
+              >
+                tVoc
+              </MenuItem>
+            </TextField>
+          </FormGroup>
+          <FormGroup>
+            <TextField
+              label="Records"
+              select
+              InputLabelProps={{ className: "required-label" }}
+              name="todayItems"
+              autoComplete="off"
+              // value={this.state.todayItems}
+              data-validators="isRequired,isAlpha"
+              // onChange={this.handleUserInput}
+              variant="outlined"
+              size="small"
+              margin="dense"
+              SelectProps={{
+                multiple: false,
+                value: this.state.todayItems,
+                onChange: this.handleUserInput
+              }}
+            >
+              <MenuItem
+                value={"2000"}
+              >
+                Today's All Record
+              </MenuItem>
+              <MenuItem
+                value={"10"}
+              >
+                10
+              </MenuItem>
+              <MenuItem
+                value={"20"}
+              >
+                20
+              </MenuItem>
+              <MenuItem
+                value={"50"}
+              >
+                50
+              </MenuItem>
+              <MenuItem
+                value={"100"}
+              >
+                100
+              </MenuItem>
+              <MenuItem
+                value={"200"}
+              >
+                200
+              </MenuItem>
+            </TextField>
+          </FormGroup>
+          <FormControl >
+            <MuiPickersUtilsProvider
+              variant="outlined"
+              utils={DateFnsUtils}
+            >
+              <KeyboardDatePicker
+
+                label="Start Date"
+                format="MM/dd/yyyy"
+                margin="normal"
+                className=""
+                id="start-date-picker-dialog"
+                InputLabelProps={{
+                  className: "required-label"
+                }}
+                InputProps={{ autoComplete: "off" }}
+                name="estDate"
+                animateYearScrolling={true}
+                value={this.state.startDate}
+                minDate={this.state.minSDate}
+                maxDate={this.state.maxSDate}
+                minDateMessage={enMsg.startMinDate}
+                maxDateMessage={enMsg.startMaxDate}
+                onChange={this.handleStartDate}
+                onError={this.handleStartDateError}
+                className="KeyboardDatePicker invoice_picker"
+                invalidDateMessage={enMsg.invalidDate}
+                KeyboardButtonProps={{
+                  "aria-label": "change date",
+                  className: "date-picker-span"
+                }}
+              />
+            </MuiPickersUtilsProvider>
+            <FormErrors
+              show={!this.state.startDateValid}
+              formErrors={this.state.formErrors}
+              fieldName="startDate"
+            />
+          </FormControl>
+        </GridContainer>
+        <GridContainer>
+          <GridItem xs={12} sm={6}>
+            <HighchartsReact
+              highcharts={Highcharts}
+              options={highChartOption}
+              className="chart-css"
+              style={{ width: "100%", height: "500px" }}
+              containerProps={{ style: { height: "500px" } }}
+            />
+          </GridItem>
+          <GridItem xs={12} sm={6}>
+            <HighchartsReact
+              highcharts={Highcharts}
+              options={tempHighChart}
+              className="chart-css"
+              style={{ width: "100%", height: "500px" }}
+              containerProps={{ style: { height: "500px" } }}
+            />
+          </GridItem>
+        </GridContainer>
+        <GridContainer>
+          <FormGroup>
+            <TextField
+              label="Records"
+              select
+              InputLabelProps={{ className: "required-label" }}
+              name="allItems"
+              autoComplete="off"
+              // value={this.state.allItems}
+              data-validators="isRequired,isAlpha"
+              // onChange={this.handleUserInput}
+              variant="outlined"
+              size="small"
+              margin="dense"
+              SelectProps={{
+                multiple: false,
+                value: this.state.allItems,
+                onChange: this.handleUserInputAll
+              }}
+            >
+              <MenuItem
+                value={"2000"}
+              >
+                All Record
+              </MenuItem>
+              <MenuItem
+                value={"100"}
+              >
+                100
+              </MenuItem>
+              <MenuItem
+                value={"200"}
+              >
+                200
+              </MenuItem>
+              <MenuItem
+                value={"500"}
+              >
+                500
+              </MenuItem>
+              <MenuItem
+                value={"1000"}
+              >
+                1000
+              </MenuItem>
+            </TextField>
+          </FormGroup>
+        </GridContainer>
+        <GridContainer>
+          <GridItem xs={12} sm={12}>
+            <HighchartsReact
+              highcharts={Highcharts}
+              options={allDataHighChart}
+              className="chart-css"
+              style={{ width: "100%", height: "500px" }}
+              containerProps={{ style: { height: "500px" } }}
+            />
+          </GridItem>
+        </GridContainer>
+        {/* <div id="pollutionData" style={{ width: "100%", height: "500px" }}></div> */}
+        <GridContainer>
+          <GridItem xs={12}>
+            <div style={{ height: '30vh', width: '100%' }}>
+              <GoogleMapReact
+                // bootstrapURLKeys={{ key: /* YOUR KEY HERE */ }}
+                defaultCenter={this.state.center}
+                defaultZoom={this.state.zoom}
+              >
+                <MapMarker
+                  lat={this.state.center.lat}
+                  lng={this.state.center.lng}
+                  text="Server"
+                />
+              </GoogleMapReact>
+            </div>
           </GridItem>
         </GridContainer>
       </div>

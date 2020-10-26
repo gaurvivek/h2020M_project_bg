@@ -303,6 +303,15 @@ button.buttonlinkHeader span.count{
   margin: 0 0;
   margin-top: 30px;
 }
+.light_green_color{
+  /* Permalink - use to edit and share this gradient: https://colorzilla.com/gradient-editor/#05745a+0,2fd8b0+100,05745a+100,000fff+100 */
+background: #05745a; /* Old browsers */
+background: -moz-linear-gradient(top,  #05745a 0%, #2fd8b0 100%, #05745a 100%, #000fff 100%) !important; /* FF3.6-15 */
+background: -webkit-linear-gradient(top,  #05745a 0%,#2fd8b0 100%,#05745a 100%,#000fff 100%) !important; /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(to bottom,  #05745a 0%,#2fd8b0 100%,#05745a 100%,#000fff 100%) !important; /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#05745a', endColorstr='#000fff',GradientType=0 ) !important; /* IE6-9 */
+}
+
 /*Theme CSS*/
 /* div.themeBgChange:after {background: #fff}
 div.cusSelected {background: #9a0b03 !important;color: #FFF;}

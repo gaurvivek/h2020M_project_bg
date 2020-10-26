@@ -119,6 +119,11 @@ const enMsg = {
   sessionExpireTitle: "Logged Out",
   sessionExpire: "Your session has been expired, please login.",
   selectAdnetworkTitle: "Select AdNetwork",
-  selectAdnetwork: "Please select adnetwork to load data."
+  selectAdnetwork: "Please select adnetwork to load data.",
+
+  startMaxDate: "Start date can not be greater than today",
+  startMinDate: "Start date can be lower than end date",
+  endMinDate: "End date can be lower than start date",
+  endMaxDate: "End date can be greater than today",
 };
 export default enMsg;
