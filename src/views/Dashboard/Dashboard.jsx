@@ -147,8 +147,8 @@ class DashboardClass extends React.Component {
       highChartOption: {},
       tempHighChart: {},
       allDataHighChart: {},
-      center: { lat: 26.263863, lng: 73.008957 },
-      zoom: 11,
+      center: { lat: 26.261530, lng: 72.965993 },
+      zoom: 12,
       selectedDate: new Date(),
       todayItems: 20,
       allItems: 200,
@@ -1456,7 +1456,7 @@ class DashboardClass extends React.Component {
           <GridItem xs={12}>
             <div style={{ height: '30vh', width: '100%' }}>
               <GoogleMapReact
-                // bootstrapURLKeys={{ key: /* YOUR KEY HERE */ }}
+                bootstrapURLKeys={{ key: "AIzaSyCcjnBZDQ0QfVA8D6jiXSiQWtvJ9sk56fA" }}
                 defaultCenter={this.state.center}
                 defaultZoom={this.state.zoom}
               >
