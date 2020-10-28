@@ -81,6 +81,7 @@ import AdnetworkSelect from "components/Sidebar/AdnetworkSelect";
 import { connect } from "react-redux";
 import logo from "assets/img/asglogo.png";
 import { clientTokenHeader } from "__helpers/auth-header"
+import userImg from "assets/img/user_img.png"
 
 // let profileImage;
 // let username;
@@ -438,16 +439,15 @@ class AdminNavbarLinksClass extends React.Component {
                           messageList && messageList.length
                             ?
                             messageList.map((mList, key) => {
-                              if (mList.notificationType == "BOOKACALL") {
+                              if (mList.type == "POLLUTION") {
                                 return (
                                   <>
                                     <ListItem alignItems="flex-start" className="notificate_inner">
-
                                       <ListItemAvatar>
-                                        <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                                        <Avatar alt="Travis Howard" src={userImg} />
                                       </ListItemAvatar>
                                       <ListItemText
-                                        primary={mList.notificationType}
+                                        primary={mList.type}
                                         secondary={
                                           <React.Fragment>
                                             <Typography
@@ -456,63 +456,9 @@ class AdminNavbarLinksClass extends React.Component {
                                               className={classes.inline}
                                               color="textPrimary"
                                             >
-                                              Book A Call -
-                                                        </Typography>
-                                            {" " + mList.notificationText}
-                                          </React.Fragment>
-                                        }
-                                      />
-                                    </ListItem>
-                                    <Divider variant="inset" component="li" />
-                                  </>
-                                )
-                              } else if (mList.notificationType == "MESSAGE") {
-                                return (
-                                  <>
-                                    <ListItem alignItems="flex-start">
-                                      <ListItemAvatar>
-                                        <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                                      </ListItemAvatar>
-                                      <ListItemText
-                                        primary={mList.notificationType}
-                                        secondary={
-                                          <React.Fragment>
-                                            <Typography
-                                              component="span"
-                                              variant="body2"
-                                              className={classes.inline}
-                                              color="textPrimary"
-                                            >
-                                              Message From {" " + mList.fromUser.firstName + " " + mList.fromUser.lastName} -
-                                                        </Typography>
-                                            {" " + mList.notificationText}
-                                          </React.Fragment>
-                                        }
-                                      />
-                                    </ListItem>
-                                    <Divider variant="inset" component="li" />
-                                  </>
-                                )
-                              } else if (mList.notificationType == "CANCELREQUEST") {
-                                return (
-                                  <>
-                                    <ListItem alignItems="flex-start">
-                                      <ListItemAvatar>
-                                        <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                                      </ListItemAvatar>
-                                      <ListItemText
-                                        primary={mList.notificationType}
-                                        secondary={
-                                          <React.Fragment>
-                                            <Typography
-                                              component="span"
-                                              variant="body2"
-                                              className={classes.inline}
-                                              color="textPrimary"
-                                            >
-                                              Request From {" " + mList.fromUser.firstName + " " + mList.fromUser.lastName} -
-                                                        </Typography>
-                                            {" " + mList.notificationText}
+                                              {mList.title}:
+                                            </Typography>
+                                            {" " + mList.message}
                                           </React.Fragment>
                                         }
                                       />

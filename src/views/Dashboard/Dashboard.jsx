@@ -183,8 +183,8 @@ class DashboardClass extends React.Component {
       alertTvoc: mailNotificationObj && mailNotificationObj.tvoc ? mailNotificationObj.tvoc : "50",
       alertCo2: mailNotificationObj && mailNotificationObj.co2 ? mailNotificationObj.co2 : "400",
       alertEmail: mailNotificationObj && mailNotificationObj.email ? mailNotificationObj.email : "",
-      showAlert: 6,
-      showMail: 6,
+      showAlert: 1,
+      showMail: 1,
     };
     this.handleGraphData = this.handleGraphData.bind(this)
     this.handlePollutionGraphData = this.handlePollutionGraphData.bind(this)
@@ -281,12 +281,12 @@ class DashboardClass extends React.Component {
       })
         .then(response => {
           if (response.status === 400) {
-            
+
           } else if (response.status === 401) {
-            
+
           } else if (response.ok) {
           } else {
-            
+
           }
           return response.json();
           // return response.text();
@@ -301,7 +301,7 @@ class DashboardClass extends React.Component {
         });
 
     } catch (error) {
-      
+
     }
   }
   async getLastData() {
@@ -360,10 +360,20 @@ class DashboardClass extends React.Component {
         co2MaxVal = 0;
         lastdata.pollLevel = "Good"
         lastdata.pollColor = "light_green_color"
+        showNotification = {
+          title: "Air Quality Alert",
+          message: "We have measured good air quality",
+          type: "success"
+        };
       } else if ((lastdata.pollution.co2 > 400 && lastdata.pollution.co2 <= 1000) || (lastdata.pollution.co2 > 5 && lastdata.pollution.co2 <= 50)) {
         co2MaxVal = 1;
         lastdata.pollLevel = "Normal"
         lastdata.pollColor = "orange_color"
+        showNotification = {
+          title: "Air Quality Alert",
+          message: "We have measured normal air quality",
+          type: "success"
+        };
       } else if ((lastdata.pollution.co2 > 1000 && lastdata.pollution.co2 <= 2000) || (lastdata.pollution.co2 > 50 && lastdata.pollution.co2 <= 325)) {
         co2MaxVal = 2;
         lastdata.pollLevel = "Poor Air"
@@ -394,16 +404,21 @@ class DashboardClass extends React.Component {
       }
 
       if (isAlertSubs && this.state.showAlert) {
-        if (this.state.showAlert == 6) {
-          showNotification = {
-            title: "Air Quality Alert",
-            message: "We have measured danger level air quality",
-            type: "danger"
-          };
-          userService.showNotification(showNotification)
-          this.setState({
-            showAlert: 1,
-          })
+        if (this.state.showAlert == this.state.showAlert) {
+          // showNotification = {
+          //   title: "Air Quality Alert",
+          //   message: "We have measured danger level air quality",
+          //   type: "danger"
+          // };
+          let alertTvoc = mailNotificationObj && mailNotificationObj.tvoc ? mailNotificationObj.tvoc : "50";
+          let alertCo2 = mailNotificationObj && mailNotificationObj.co2 ? mailNotificationObj.co2 : "400";
+          let alertEmail = mailNotificationObj && mailNotificationObj.email ? mailNotificationObj.email : "";
+          if (alertTvoc <= lastdata.pollution.tvoc || alertCo2 <= lastdata.pollution.co2) {
+            userService.showNotification(showNotification)
+            this.setState({
+              showAlert: 1,
+            })
+          }
         } else {
           let showAlert = this.state.showAlert
           this.setState({

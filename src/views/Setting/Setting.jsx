@@ -167,6 +167,11 @@ class SettingClass extends React.Component {
         const value = e.target.value;
 
         this.setState({ [name]: value });
+        let mailNotificationObj = JSON.parse(localStorage.getItem(MAIL_NOTIFICATION));
+        if (!mailNotificationObj)
+            mailNotificationObj = {}
+        mailNotificationObj[name] = value
+        localStorage.setItem(MAIL_NOTIFICATION, JSON.stringify(mailNotificationObj));
     };
     saveSubscription() {
         if (this.state.emailValid) {
@@ -229,6 +234,12 @@ class SettingClass extends React.Component {
         }
 
         userService.showNotification(showNotification)
+        let mailNotificationObj = JSON.parse(localStorage.getItem(MAIL_NOTIFICATION));
+        if (!mailNotificationObj)
+            mailNotificationObj = {}
+        mailNotificationObj.tvoc = this.state.tvoc
+        mailNotificationObj.co2 = this.state.co2
+        localStorage.setItem(MAIL_NOTIFICATION, JSON.stringify(mailNotificationObj));
     }
     render() {
         const { classes } = this.props;
@@ -275,45 +286,9 @@ class SettingClass extends React.Component {
             <div className="recordFormRow">
                 {/* <NotificationContainer/> */}
                 <div className="recordFormHead white-text">Customize Alerts</div>
-                <GridContainer>
-                    <GridItem xs={12} sm={4}>
-                        <Card className={`dash-tiles setting_cards p-10`}>
-                            <CardHeader color="success" stats icon>
-                                <h5 className={"white-text left-text"}>Alert Message</h5>
-                                <SwitchToggle
-                                    // id={subscriber.id}
-                                    status={this.state.alert}
-                                    clickHandler={() => this.subsAlert()}
-                                />
-                            </CardHeader>
-                        </Card>
-                    </GridItem>
-                </GridContainer>
-                <div className="recordFormHead white-text">Subscribe Alerts</div>
+                <div className="recordFormHead white-text">Alerts Values</div>
                 <GridContainer>
                     <div className="dashTimePanel dashTimePanel2">
-                        <FormGroup className="setting_cards p-10">
-                            <TextField
-                                label="email"
-                                InputLabelProps={{ className: "required-label" }}
-                                name="email"
-                                text="email"
-                                autoComplete="off"
-                                // value={this.state.email}
-                                data-validators="isRequired,isAlpha"
-                                // onChange={this.handleUserInput}
-                                variant="outlined"
-                                size="small"
-                                margin="dense"
-                                value={this.state.email}
-                                onChange={this.handleUserInput}
-                            />
-                            <FormErrors
-                                show={!this.state.emailValid}
-                                formErrors={this.state.formErrors}
-                                fieldName="email"
-                            />
-                        </FormGroup>
                         <FormGroup className="setting_cards fix-height p-10">
                             <TextField
                                 label="tVoc"
@@ -395,6 +370,48 @@ class SettingClass extends React.Component {
                                     {"More than 2000"}
                                 </MenuItem>
                             </TextField>
+                        </FormGroup>
+                    </div>
+                </GridContainer>
+                <div className="recordFormHead white-text">Show Alerts</div>
+                <GridContainer>
+                    <GridItem xs={12} sm={4}>
+                        <Card className={`dash-tiles setting_cards p-10`}>
+                            <CardHeader color="success" stats icon>
+                                <h5 className={"white-text left-text"}>Alert Message</h5>
+                                <SwitchToggle
+                                    // id={subscriber.id}
+                                    status={this.state.alert}
+                                    clickHandler={() => this.subsAlert()}
+                                />
+                            </CardHeader>
+                        </Card>
+                    </GridItem>
+                </GridContainer>
+                <div className="recordFormHead white-text">Subscribe Alerts</div>
+                <GridContainer>
+                    <div className="dashTimePanel dashTimePanel2">
+                        <FormGroup className="setting_cards p-10">
+                            <TextField
+                                label="email"
+                                InputLabelProps={{ className: "required-label" }}
+                                name="email"
+                                text="email"
+                                autoComplete="off"
+                                // value={this.state.email}
+                                data-validators="isRequired,isAlpha"
+                                // onChange={this.handleUserInput}
+                                variant="outlined"
+                                size="small"
+                                margin="dense"
+                                value={this.state.email}
+                                onChange={this.handleUserInput}
+                            />
+                            <FormErrors
+                                show={!this.state.emailValid}
+                                formErrors={this.state.formErrors}
+                                fieldName="email"
+                            />
                         </FormGroup>
                         <div className="recordFormCol">
                             <Button
