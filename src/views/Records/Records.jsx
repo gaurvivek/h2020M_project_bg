@@ -478,11 +478,11 @@ class RecordClass extends React.Component {
       pollutionData,
     } = this.state;
     return (
-      <div>
+      <div className="recordFormRow">
         {/* <NotificationContainer/> */}
-        Pollution Records
-        <div>
-          <FormControl >
+        <div className="recordFormHead white-text">Pollution Records</div>
+        <div className="recordFormCol">
+          <FormControl className="rec-inputs">
             <MuiPickersUtilsProvider
               variant="outlined"
               utils={DateFnsUtils}
@@ -513,6 +513,7 @@ class RecordClass extends React.Component {
                   "aria-label": "change date",
                   className: "date-picker-span"
                 }}
+                size="small"
               />
             </MuiPickersUtilsProvider>
             <FormErrors
@@ -522,7 +523,7 @@ class RecordClass extends React.Component {
             />
           </FormControl>
         </div>
-        <div>
+        <div className="recordFormCol">
           <FormControl >
             <MuiPickersUtilsProvider
               // variant="outlined"
@@ -564,7 +565,7 @@ class RecordClass extends React.Component {
             />
           </FormControl>
         </div>
-        <div>
+        <div className="recordFormCol">
           <Button
             className="client newbtn greenbtn"
             type="button"
@@ -670,109 +671,110 @@ class RecordClass extends React.Component {
             </Paper>
           </CardBody>
         </GridContainer>
+        <div className="recordFormRow">
+          <div className="recordFormHead white-text">Temperature Records</div>
+          <div className="recordFormCol">
+            <FormControl >
+              <MuiPickersUtilsProvider
+                variant="outlined"
+                utils={DateFnsUtils}
+              >
+                <KeyboardDatePicker
 
-        Temperature Values
-        <div>
-          <FormControl >
-            <MuiPickersUtilsProvider
-              variant="outlined"
-              utils={DateFnsUtils}
-            >
-              <KeyboardDatePicker
-
-                label="Start Date"
-                format="MM/dd/yyyy"
-                margin="normal"
-                className=""
-                id="start-date-picker-dialog"
-                InputLabelProps={{
-                  className: "required-label"
-                }}
-                InputProps={{ autoComplete: "off" }}
-                name="estDate"
-                animateYearScrolling={true}
-                value={this.state.startDateT}
-                minDate={this.state.minSDateT}
-                maxDate={this.state.maxSDateT}
-                minDateMessage={enMsg.startMinDate}
-                maxDateMessage={enMsg.startMaxDate}
-                onChange={this.handleStartDateT}
-                onError={this.handleStartDateErrorT}
-                className="KeyboardDatePicker invoice_picker"
-                invalidDateMessage={enMsg.invalidDate}
-                KeyboardButtonProps={{
-                  "aria-label": "change date",
-                  className: "date-picker-span"
-                }}
-              />
-            </MuiPickersUtilsProvider>
-            <FormErrors
-              show={!this.state.startDateValid}
-              formErrors={this.state.formErrors}
-              fieldName="startDate"
-            />
-          </FormControl>
-        </div>
-        <div>
-          <FormControl >
-            <MuiPickersUtilsProvider
-              // variant="outlined"
-              utils={DateFnsUtils}
-
-            >
-              <KeyboardDatePicker
-
-                label="End Date"
-                format="MM/dd/yyyy"
-                margin="normal"
-                className=""
-                id="start-date-picker-dialog"
-                InputLabelProps={{
-                  className: "required-label"
-                }}
-                InputProps={{ autoComplete: "off" }}
-                name="estDate"
-                animateYearScrolling={true}
-                value={this.state.endDateT}
-                minDate={this.state.minEDateT}
-                maxDate={this.state.maxEDateT}
-                minDateMessage={enMsg.endMinDate}
-                maxDateMessage={enMsg.endMaxDate}
-                onChange={this.handleEndDateT}
-                onError={this.handleEndDateErrorT}
-                className="KeyboardDatePicker invoice_picker"
-                invalidDateMessage={enMsg.invalidDate}
-                KeyboardButtonProps={{
-                  "aria-label": "change date",
-                  className: "date-picker-span"
-                }}
-              />
-            </MuiPickersUtilsProvider>
-            <FormErrors
-              show={!this.state.startDateValid}
-              formErrors={this.state.formErrors}
-              fieldName="startDate"
-            />
-          </FormControl>
-        </div>
-        <div>
-          <Button
-            className="client newbtn greenbtn"
-            type="button"
-            onClick={() => this.searchPollDataT()}
-            disabled={!this.validateFormT() || this.state.loading}
-          >
-            <p>
-              {this.state.loading && (
-                <CircularProgress
-                  size={24}
-                  className="buttonProgress"
-                  color="secondary"
+                  label="Start Date"
+                  format="MM/dd/yyyy"
+                  margin="normal"
+                  className=""
+                  id="start-date-picker-dialog"
+                  InputLabelProps={{
+                    className: "required-label"
+                  }}
+                  InputProps={{ autoComplete: "off" }}
+                  name="estDate"
+                  animateYearScrolling={true}
+                  value={this.state.startDateT}
+                  minDate={this.state.minSDateT}
+                  maxDate={this.state.maxSDateT}
+                  minDateMessage={enMsg.startMinDate}
+                  maxDateMessage={enMsg.startMaxDate}
+                  onChange={this.handleStartDateT}
+                  onError={this.handleStartDateErrorT}
+                  className="KeyboardDatePicker invoice_picker"
+                  invalidDateMessage={enMsg.invalidDate}
+                  KeyboardButtonProps={{
+                    "aria-label": "change date",
+                    className: "date-picker-span"
+                  }}
                 />
-              )}
-              Search
-            </p>
-          </Button>
+              </MuiPickersUtilsProvider>
+              <FormErrors
+                show={!this.state.startDateValid}
+                formErrors={this.state.formErrors}
+                fieldName="startDate"
+              />
+            </FormControl>
+          </div>
+          <div className="recordFormCol">
+            <FormControl >
+              <MuiPickersUtilsProvider
+                // variant="outlined"
+                utils={DateFnsUtils}
+
+              >
+                <KeyboardDatePicker
+
+                  label="End Date"
+                  format="MM/dd/yyyy"
+                  margin="normal"
+                  className=""
+                  id="start-date-picker-dialog"
+                  InputLabelProps={{
+                    className: "required-label"
+                  }}
+                  InputProps={{ autoComplete: "off" }}
+                  name="estDate"
+                  animateYearScrolling={true}
+                  value={this.state.endDateT}
+                  minDate={this.state.minEDateT}
+                  maxDate={this.state.maxEDateT}
+                  minDateMessage={enMsg.endMinDate}
+                  maxDateMessage={enMsg.endMaxDate}
+                  onChange={this.handleEndDateT}
+                  onError={this.handleEndDateErrorT}
+                  className="KeyboardDatePicker invoice_picker"
+                  invalidDateMessage={enMsg.invalidDate}
+                  KeyboardButtonProps={{
+                    "aria-label": "change date",
+                    className: "date-picker-span"
+                  }}
+                />
+              </MuiPickersUtilsProvider>
+              <FormErrors
+                show={!this.state.startDateValid}
+                formErrors={this.state.formErrors}
+                fieldName="startDate"
+              />
+            </FormControl>
+          </div>
+          <div className="recordFormCol">
+            <Button
+              className="client newbtn greenbtn"
+              type="button"
+              onClick={() => this.searchPollDataT()}
+              disabled={!this.validateFormT() || this.state.loading}
+            >
+              <p>
+                {this.state.loading && (
+                  <CircularProgress
+                    size={24}
+                    className="buttonProgress"
+                    color="secondary"
+                  />
+                )}
+                Search
+              </p>
+            </Button>
+          </div>
         </div>
         <GridContainer>
           <CardBody>

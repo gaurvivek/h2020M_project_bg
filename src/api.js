@@ -3,13 +3,7 @@
 All API path using in the application
 */
 
-import {
-  ADNETWORK_ID_SLUG,
-  CAMPAIGN_ID_SLUG,
-  ASSET_ID_SLUG,
-  VENDOR_ID_SLUG,
-  ADVERTISEMENT_ID_SLUG
-} from "__helpers/constants";
+
 
 // core components/views for RTL layout
 
@@ -21,39 +15,6 @@ export const apiPath = {
   clientToken: `${liveApiEndPoin}/oauth/client`,
   refreshClientToken: `${liveApiEndPoin}/oauth/user-reauthorize`,
   login: `${liveApiEndPoin}/oauth/pass`,
-  signup: `${liveApiEndPoin}/identity/profile`, // POST Request
-  profile: `${liveApiEndPoin}/identity/profile`, // GET Request
-  profileImage: `${liveApiEndPoin}/identity/profile/user/imageRef`, // GET Request
-  userReauthorize: `${liveApiEndPoin}/oauth/user-reauthorize`,
-  profileChangePassword: `${liveApiEndPoin}/identity/profile/password`,
-  forgotPassword: `${liveApiEndPoin}/forgot-password`,
-  resetPassword: `${liveApiEndPoin}/reset-password`,
-  adnetwork: `${liveApiEndPoin}/identity/profile/adnetwork`,
-  manageAdnetwork: `${liveApiEndPoin}/identity/profile/adnetwork/${ADNETWORK_ID_SLUG}`,
-  addCampaign: `${liveApiEndPoin}/adnetwork/${ADNETWORK_ID_SLUG}/campaign`,
-  addEditCampaign: `${liveApiEndPoin}/adnetwork/${ADNETWORK_ID_SLUG}/campaign/${CAMPAIGN_ID_SLUG}`,
-  /* campaign: `${liveApiEndPoin}/adnetwork/campaign`, */
-  listCampaign: `${liveApiEndPoin}/adnetwork/${ADNETWORK_ID_SLUG}/campaign`,
-  apiListAdvertisement: `${liveApiEndPoin}/adnetwork/advertisement`,
-  addAdvertisement: `${liveApiEndPoin}/adnetwork/${ADNETWORK_ID_SLUG}/advertisement`,
-  editAdvertisement: `${liveApiEndPoin}/adnetwork/${ADNETWORK_ID_SLUG}/advertisement/${ADVERTISEMENT_ID_SLUG}`,
-  vendors: `${liveApiEndPoin}/adnetwork/${ADNETWORK_ID_SLUG}/vendor`,
-  manageVendor: `${liveApiEndPoin}/adnetwork/${ADNETWORK_ID_SLUG}/vendor/${VENDOR_ID_SLUG}`,
-  assets: `${liveApiEndPoin}/adnetwork/${ADNETWORK_ID_SLUG}/asset`,
-  manageAssets: `${liveApiEndPoin}/adnetwork/${ADNETWORK_ID_SLUG}/asset/${ASSET_ID_SLUG}`,
-  fetchAnalytics: `${liveApiEndPoin}/analytics/adnetwork/${ADNETWORK_ID_SLUG}/campaign/${CAMPAIGN_ID_SLUG}`,
-  fetchBrands: `${liveApiEndPoin}/preference/brand`,
-  fetchCategory: `${liveApiEndPoin}/preference/category`,
-
-
-  advertisementType: `${liveApiEndPoin}/adnetwork/advertisement/adType`,
-  advertisementMedium: `${liveApiEndPoin}/adnetwork/advertisement/adMedium`,
-  advertisementStatus: `${liveApiEndPoin}/adnetwork/advertisement/adStatus`,
-
-  assetDisplayType: `${liveApiEndPoin}/adnetwork/asset/displayType`,
-  assetType: `${liveApiEndPoin}/adnetwork/asset/assetType`,
-
-  compaignStatus: `${liveApiEndPoin}/adnetwork/campaign/campaignStatus`,
 };
 // export const apiPath = {
 //   login: `${apiEndPoin}login`,

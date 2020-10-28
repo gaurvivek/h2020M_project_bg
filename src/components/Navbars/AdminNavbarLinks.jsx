@@ -38,8 +38,23 @@ import {
   InputLabel,
   FormControl,
   Input,
-  CircularProgress
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Slide,
+  IconButton,
+  LinearProgress,
+  ListItemText,
+  ListItemAvatar,
+  Typography,
+  List,
+  ListItem,
+  Box,
 } from "@material-ui/core/";
+import CloseIcon from '@material-ui/icons/Close'
 // @material-ui/icons
 import Person from "@material-ui/icons/Person";
 import Notifications from "@material-ui/icons/Notifications";
@@ -61,16 +76,11 @@ import { userService } from "_services/user.service";
 import { DEFAULT_PROFILE_IMG, NO_USERNAME } from "__helpers/constants";
 import GridItem from "components/Grid/GridItem";
 import GridContainer from "components/Grid/GridContainer.jsx";
-import { STORED_ADNETWORK } from "__helpers/constants";
-import { SELECTED_ADNETWORK } from "__helpers/constants";
-import { STORED_ADVERTISEMENT } from "__helpers/constants";
 import dropdown from "assets/img/dropdown.png";
-import { STORED_CAMPAIGN_ANALYTICS } from "__helpers/constants";
-import { STORED_ADVERTISEMENT_ANALYTICS } from "__helpers/constants";
-import { STORED_ASSETS_ANALYTICS } from "__helpers/constants";
-import { SELECTED_CAMPAIGN } from "__helpers/constants";
 import AdnetworkSelect from "components/Sidebar/AdnetworkSelect";
 import { connect } from "react-redux";
+import logo from "assets/img/asglogo.png";
+import { clientTokenHeader } from "__helpers/auth-header"
 
 // let profileImage;
 // let username;
@@ -102,9 +112,6 @@ const mapStateToProps = state => {
 class AdminNavbarLinksClass extends React.Component {
   constructor(props) {
     super(props);
-    let adNetworksData = JSON.parse(localStorage.getItem(STORED_ADNETWORK));
-    let selectedAdnetworkData = JSON.parse(localStorage.getItem(SELECTED_ADNETWORK));
-    let selectedAdnetwork = (selectedAdnetworkData) ? selectedAdnetworkData.adNetworkId : "";
     this._isMounted = false;
     let spinner = document.getElementById('loadingSpinner');
     // if (spinner && !spinner.hasAttribute('hidden')) {
@@ -121,18 +128,19 @@ class AdminNavbarLinksClass extends React.Component {
       userDetail: {},
       profileImage: DEFAULT_PROFILE_IMG,
       username: NO_USERNAME,
-      adnetworkId: selectedAdnetwork ? selectedAdnetwork : "",
-      adNetworkJson: (adNetworksData) ? adNetworksData : [],
-      adnetworkData: (selectedAdnetworkData) ? selectedAdnetworkData : [],
       loadSpinner: false,
       spinner: spinner,
       loading: false,
       reduxLoadFlag: false,
+      openNotifcationList: false,
+      messageCount: 0,
+      messageList: [],
 
     };
     this.handleToggleProfile = this.handleToggleProfile.bind(this);
+    this.checkNotification = this.checkNotification.bind(this);
   }
-  
+
   componentWillUnmount() {
     this._isMounted = false;
     Object.getPrototypeOf(this).constructor.STATE = this.state;
@@ -164,7 +172,7 @@ class AdminNavbarLinksClass extends React.Component {
         profileImage: userInfo
           ? userInfo.imageRef
           : DEFAULT_PROFILE_IMG,
-        username: userInfo ? userInfo.fName+" "+userInfo.lName : NO_USERNAME,
+        username: userInfo ? userInfo.fName + " " + userInfo.lName : NO_USERNAME,
         adnetworkId: selectedAdnetwork ? selectedAdnetwork : "",
         adNetworkJson: (adnetworkData) ? adnetworkData : [],
       })
@@ -191,10 +199,11 @@ class AdminNavbarLinksClass extends React.Component {
         profileImage: userInfo
           ? userInfo.imageRef
           : DEFAULT_PROFILE_IMG,
-        username: userInfo ? userInfo.fName+" "+userInfo.lName : NO_USERNAME,
+        username: userInfo ? userInfo.fName + " " + userInfo.lName : NO_USERNAME,
         adnetworkId: selectedAdnetwork ? selectedAdnetwork : "",
         adNetworkJson: (adnetworkData) ? adnetworkData : [],
       })
+      this.interval = setInterval(() => this.checkNotification(), 7000);
     }
     // userService.getAll().then(users => {
     //   if (typeof users === "object" && users.fName) {
@@ -223,20 +232,57 @@ class AdminNavbarLinksClass extends React.Component {
     //   }
     // });
     // this.fetchData();
-    
+
     // if (spinner) {
     //   spinner.setAttribute('hidden', 'true');
     // }
   }
+  checkNotification = () => {
+    let showNotification = {};
+    // let apiUrl = apiPath.isNewNotificationList;
+    let apiUrl = "http://35.193.238.179:9090/api/pollution/notification?sort=date,desc";
+    const response = fetch(apiUrl, {
+      method: "GET",
+      headers: clientTokenHeader()
+    })
+      .then(response => {
+        if (response.status === 400) {
+
+        } else if (response.ok) {
+
+        } else {
+
+        }
+        return response.json();
+      })
+      .then(data => {
+        // this.setState({ newNotification: data.newNotificationExist })
+        if (data && data.length) {
+          let readCount = data.length;
+          data.map(nList => {
+            if (!nList.readStatus) {
+              // readCount = readCount + 1;
+            }
+          })
+          this.setState({
+            messageCount: readCount,
+            messageList: data,
+          })
+        }
+      })
+      .catch(error => {
+        showNotification = {
+          title: 'Notification',
+          message: 'Bad response from server',
+          type: "danger"
+        };
+      });
+    userService.showNotification(showNotification);
+  }
   async fetchData() {
     let adNetworks = [];
     try {
-      // adNetworks = await userService.fetchAdNetwork();
-      adNetworks = JSON.parse(localStorage.getItem(STORED_ADNETWORK));
-      this._isMounted &&
-          this.setState({
-            adNetworkJson: adNetworks,
-          });
+
     } catch (errors) {
     }
   }
@@ -270,7 +316,7 @@ class AdminNavbarLinksClass extends React.Component {
   handleSelectAdnetwork(eventId) {
   }
   handleToggleProfile = () => {
-  
+
     // this.props.history.push(basePath + baseRoutes.profile.path);
     this.setState(state => ({ openProfile: !state.openProfile }));
   };
@@ -287,9 +333,24 @@ class AdminNavbarLinksClass extends React.Component {
 
     // this.setState(state => ({ openProfile: !state.openProfile }));
   };
+  handleToggleNotificationList = () => {
+    this._isMounted && this.setState(state => ({
+      openNotifcationList: !state.openNotifcationList,
+      reportModal: false,
+    }));
+  };
+  handleCloseNotificationList = event => {
+    if (this.anchorNotificationList.contains(event.target)) {
+      return;
+    }
+    this.setState({
+      openNotifcationList: false,
+      reportMenu: false,
+    });
+  };
   render() {
     const { classes } = this.props;
-    const { openNotifcation, openProfile, adnetworkId, adnetworkData, adNetworkJson } = this.state;
+    const { messageCount, messageList, loading, openNotifcationList, openNotifcation, openProfile, adnetworkId, adnetworkData, adNetworkJson } = this.state;
     const user_image = "user-image";
     const styleuser = {
       borderRadius: "50%",
@@ -323,6 +384,159 @@ class AdminNavbarLinksClass extends React.Component {
             <AdnetworkSelect style={{zIndex: "99999"}} updateUserInfo={this.props.updateUserInfo} />
         </div> */}
         <div className={classes.manager + " profile-box"}>
+          <Button
+            onClick={this.handleToggleNotificationList}
+            buttonRef={node => {
+              this.anchorNotificationList = node;
+            }}
+            color={"transparent"}
+            aria-owns={openNotifcationList ? "notification-menu-list-grow" : null}
+            aria-haspopup="true"
+            className="buttonlinkHeader"
+          >
+            <Notifications className="noti_count" />
+            <sup>{
+
+              messageCount > 0
+                ?
+                messageCount
+                :
+                null
+
+            }</sup>
+          </Button>
+          <Poppers
+            open={openNotifcationList}
+            anchorEl={this.anchorNotificationList}
+            transition
+            disablePortal
+            className={
+              classNames({ [classes.popperClose]: !openNotifcationList }) +
+              " " +
+              classes.popperNavXX + ' AdnetworkSelect-popperNav'
+            }
+            style={{ zIndex: "9999999" }}
+          >
+            {({ TransitionProps, placement }) => (
+              <Grow
+                {...TransitionProps}
+                id="notification-menu-list-grow"
+                style={{
+                  transformOrigin:
+                    placement === "bottom" ? "center top" : "center bottom"
+                }}
+              >
+                <Paper className="user-menu-box" >
+                  <ClickAwayListener onClickAway={this.handleCloseNotificationList}>
+                    <Box>
+                      <div className="top_noti">
+                        <h4>Notification List</h4>
+                      </div>
+                      <List>
+                        {
+
+                          messageList && messageList.length
+                            ?
+                            messageList.map((mList, key) => {
+                              if (mList.notificationType == "BOOKACALL") {
+                                return (
+                                  <>
+                                    <ListItem alignItems="flex-start" className="notificate_inner">
+
+                                      <ListItemAvatar>
+                                        <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                                      </ListItemAvatar>
+                                      <ListItemText
+                                        primary={mList.notificationType}
+                                        secondary={
+                                          <React.Fragment>
+                                            <Typography
+                                              component="span"
+                                              variant="body2"
+                                              className={classes.inline}
+                                              color="textPrimary"
+                                            >
+                                              Book A Call -
+                                                        </Typography>
+                                            {" " + mList.notificationText}
+                                          </React.Fragment>
+                                        }
+                                      />
+                                    </ListItem>
+                                    <Divider variant="inset" component="li" />
+                                  </>
+                                )
+                              } else if (mList.notificationType == "MESSAGE") {
+                                return (
+                                  <>
+                                    <ListItem alignItems="flex-start">
+                                      <ListItemAvatar>
+                                        <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                                      </ListItemAvatar>
+                                      <ListItemText
+                                        primary={mList.notificationType}
+                                        secondary={
+                                          <React.Fragment>
+                                            <Typography
+                                              component="span"
+                                              variant="body2"
+                                              className={classes.inline}
+                                              color="textPrimary"
+                                            >
+                                              Message From {" " + mList.fromUser.firstName + " " + mList.fromUser.lastName} -
+                                                        </Typography>
+                                            {" " + mList.notificationText}
+                                          </React.Fragment>
+                                        }
+                                      />
+                                    </ListItem>
+                                    <Divider variant="inset" component="li" />
+                                  </>
+                                )
+                              } else if (mList.notificationType == "CANCELREQUEST") {
+                                return (
+                                  <>
+                                    <ListItem alignItems="flex-start">
+                                      <ListItemAvatar>
+                                        <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                                      </ListItemAvatar>
+                                      <ListItemText
+                                        primary={mList.notificationType}
+                                        secondary={
+                                          <React.Fragment>
+                                            <Typography
+                                              component="span"
+                                              variant="body2"
+                                              className={classes.inline}
+                                              color="textPrimary"
+                                            >
+                                              Request From {" " + mList.fromUser.firstName + " " + mList.fromUser.lastName} -
+                                                        </Typography>
+                                            {" " + mList.notificationText}
+                                          </React.Fragment>
+                                        }
+                                      />
+                                    </ListItem>
+                                    <Divider variant="inset" component="li" />
+                                  </>
+                                )
+                              }
+                            })
+                            :
+                            loading
+                              ?
+                              <p className="no_noti">Loading, please wait</p>
+                              :
+                              <p className="no_noti">No notification</p>
+                        }
+                      </List>
+                    </Box>
+                  </ClickAwayListener>
+                </Paper>
+              </Grow>
+            )}
+          </Poppers>
+
           <Link
             href={basePath + baseRoutes.dashboard.path} ///${user.username}
             to={basePath + baseRoutes.dashboard.path} ///${user.username}
@@ -350,7 +564,7 @@ class AdminNavbarLinksClass extends React.Component {
               <span>
                 <Avatar
                   alt=""
-                  src={this.state.profileImage}
+                  src={logo}
                   className={user_image}
                   style={styleuser}
                 />

@@ -24,7 +24,7 @@ import { Chart } from "react-google-charts";
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from "@material-ui/pickers"
 import { FormErrors } from "components/Login/FormErrors"
 import DateFnsUtils from "@date-io/date-fns"
-
+import { generalAuthTokenHeader } from "__helpers/auth-header";
 
 import {
   Button,
@@ -66,6 +66,8 @@ import {
   ANALYTICS_CSV_DATA, ANALYTICS_CSV_ADVERTISEMENT_DATA,
   PER_PAGE_OPTIONS,
   RECORD_PER_PAGE,
+  ALERT_NOTIFICATION,
+  MAIL_NOTIFICATION,
 } from "__helpers/constants";
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
@@ -78,6 +80,8 @@ import dataModule from 'highcharts/modules/data';
 import GoogleMapReact from 'google-map-react';
 import { last } from "@amcharts/amcharts4/.internal/core/utils/Array";
 import flatIcon from "assets/img/flat.svg"
+import sunnycon from "assets/img/sunny.svg"
+import logoIcon from "assets/img/asglogo.svg"
 
 
 am4core.useTheme(am4themes_animated);
@@ -115,7 +119,7 @@ const mapStateToProps = state => {
 const MapMarker = ({ text }) =>
   <div style={{
     color: 'white',
-    background: 'grey',
+    background: '#17182A',
     padding: '15px 10px',
     display: 'inline-flex',
     textAlign: 'center',
@@ -124,13 +128,19 @@ const MapMarker = ({ text }) =>
     borderRadius: '100%',
     transform: 'translate(-50%, -50%)'
   }}>
-    {text}
+    <img
+      style={{ width: "100px" }}
+      src={logoIcon}
+    />
+    {/* {text} */}
   </div>;
 class DashboardClass extends React.Component {
   constructor(props) {
     super(props);
     this.dateUtility = new DateFnsUtils();
     this._isMounted = false;
+    let alertNotificationValue = JSON.parse(localStorage.getItem(ALERT_NOTIFICATION));
+    let mailNotificationObj = JSON.parse(localStorage.getItem(MAIL_NOTIFICATION));
     this.state = {
       value: 0,
       page: 0,
@@ -168,6 +178,13 @@ class DashboardClass extends React.Component {
       },
       startDateValid: false,
       endDateValid: false,
+      isAlertSubs: alertNotificationValue ? true : false,
+      isMailSubs: mailNotificationObj && mailNotificationObj.email ? true : false,
+      alertTvoc: mailNotificationObj && mailNotificationObj.tvoc ? mailNotificationObj.tvoc : "50",
+      alertCo2: mailNotificationObj && mailNotificationObj.co2 ? mailNotificationObj.co2 : "400",
+      alertEmail: mailNotificationObj && mailNotificationObj.email ? mailNotificationObj.email : "",
+      showAlert: 6,
+      showMail: 6,
     };
     this.handleGraphData = this.handleGraphData.bind(this)
     this.handlePollutionGraphData = this.handlePollutionGraphData.bind(this)
@@ -181,9 +198,12 @@ class DashboardClass extends React.Component {
 
     this.handleStartDate = this.handleStartDate.bind(this);
     this.handleStartDateError = this.handleStartDateError.bind(this);
+    this.backgroundDataApi = this.backgroundDataApi.bind(this);
+    this.backgroundM = this.backgroundM.bind(this);
+    this.sendMail = this.sendMail.bind(this);
   }
 
-  getToday(dateValue, server) {
+  getToday(dateValue, dateFormat) {
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
       "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"
     ];
@@ -201,8 +221,12 @@ class DashboardClass extends React.Component {
     if (mm < 10) {
       mm = `0${mm}`;
     }
-    if (server) {
-      return `${dd}-${mm}-${yyyy}`;
+    if (dateFormat) {
+      if (dateFormat == "date") {
+        return `${dd}-${mm}-${yyyy}`;
+      } else {
+        return `${hh}:${min}:${sec}`;
+      }
     }
     return `${dd} ${mName} ${hh}:${min}:${sec}`;
   }
@@ -216,113 +240,248 @@ class DashboardClass extends React.Component {
     // this.handlePollutionGraphData();
     // this.newHighPollChart();
     // this.tempHighChart();
+    this.backgroundM();
   }
+  backgroundM() {
+    this.interval = setInterval(
+      () => this.backgroundDataApi(), 10000
+    );
+  }
+  backgroundDataApi() {
+    this.getLastData();
+    this.getTodayData();
+    // this.setState({
+    //   showAlert: true,
+    // })
+    // this.getAllData();
+  }
+  async sendMail(dataObj, emailAddr) {
+    let mailBody = `
+    Dear,
 
+    We have measured danger level air quality. please take appropriate action.
+    <br>Poor air quality exposure may lead to headaches, sleepiness and stagnant, stale, stuffy air. Poor concentration, loss of attention, increased heart rate and slight nausea may also be present.
+    <br>Please take care. Stay safe, Stay Healthy!
+    <br>Thank You
+    <br>
+    Regards
+    <br>
+    Techno Wonders Team.
+  `;
+    const data = {
+      message: mailBody,
+      email: emailAddr,
+    };
+    let apiUrl = "http://35.193.238.179:9090/api/pollution/send-mail";
+    try {
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: generalAuthTokenHeader(),
+        body: JSON.stringify(data),
+      })
+        .then(response => {
+          if (response.status === 400) {
+            
+          } else if (response.status === 401) {
+            
+          } else if (response.ok) {
+          } else {
+            
+          }
+          return response.json();
+          // return response.text();
+        })
+        .then(data => {
+          console.log(data)
+          return true;
+        })
+        .catch(error => {
+
+          return response;
+        });
+
+    } catch (error) {
+      
+    }
+  }
   async getLastData() {
     let apiUrl = "http://35.193.238.179:9090/api/pollution/top-data";
     let lastdata = await userService.fetchGlobalApisWithoutAuth(apiUrl);
+    let alertNotificationValue = JSON.parse(localStorage.getItem(ALERT_NOTIFICATION));
+    let mailNotificationObj = JSON.parse(localStorage.getItem(MAIL_NOTIFICATION));
+
+    let isAlertSubs = alertNotificationValue ? true : false;
+    let isMailSubs = mailNotificationObj && mailNotificationObj.email ? true : false;
+
     if (lastdata && lastdata.max_co2) {
-      if (lastdata.max_co2 <= 300) {
+      let co2MaxVal = 0;
+      lastdata.maxPollLevel = "Good"
+      if ((lastdata.max_co2 > 250 && lastdata.max_co2 <= 400) || (lastdata.max_tvoc <= 5)) {
+        co2MaxVal = 0;
+        lastdata.maxPollLevel = "Good"
+      } else if ((lastdata.max_co2 > 400 && lastdata.max_co2 <= 1000) || (lastdata.max_tvoc > 5 && lastdata.max_tvoc <= 50)) {
+        co2MaxVal = 1;
         lastdata.maxPollLevel = "Normal"
-      } else if (lastdata.max_co2 > 300 && lastdata.max_co2 < 450) {
-        lastdata.maxPollLevel = "Average"
-      } else if (lastdata.max_co2 > 450 && lastdata.max_co2 < 750) {
-        lastdata.maxPollLevel = "Medium"
-      } else if (lastdata.max_co2 > 750 && lastdata.max_co2 < 950) {
-        lastdata.maxPollLevel = "High"
-      } else if (lastdata.max_co2 > 950 && lastdata.max_co2 < 1400) {
-        lastdata.maxPollLevel = "Extreme High"
-      } else {
-        lastdata.maxPollLevel = "Pollution Warning"
+      } else if ((lastdata.max_co2 > 1000 && lastdata.max_co2 <= 2000) || (lastdata.max_tvoc > 50 && lastdata.max_tvoc <= 325)) {
+        co2MaxVal = 2;
+        lastdata.maxPollLevel = "Poor Air"
+      } else if ((lastdata.max_co2 > 2000 && lastdata.max_co2 <= 5000) || (lastdata.max_tvoc > 325 && lastdata.max_tvoc <= 500)) {
+        co2MaxVal = 3;
+        lastdata.maxPollLevel = "Air Quality Alert"
+      } else if ((lastdata.max_co2 > 5000) || (lastdata.max_tvoc > 325 && lastdata.max_tvoc <= 500)) {
+        co2MaxVal = 4;
+        lastdata.maxPollLevel = "Danger Level"
       }
 
-      if (lastdata.min_co2 <= 300) {
+      // let co2MaxVal = 0;
+      lastdata.minPollLevel = "Good"
+      if ((lastdata.min_co2 > 250 && lastdata.min_co2 <= 400) || (lastdata.min_tvoc <= 5)) {
+        co2MaxVal = 0;
+        lastdata.minPollLevel = "Good"
+      } else if ((lastdata.min_co2 > 400 && lastdata.min_co2 <= 1000) || (lastdata.min_tvoc > 5 && lastdata.min_tvoc <= 50)) {
+        co2MaxVal = 1;
         lastdata.minPollLevel = "Normal"
-      } else if (lastdata.min_co2 > 300 && lastdata.min_co2 < 450) {
-        lastdata.minPollLevel = "Average"
-      } else if (lastdata.min_co2 > 450 && lastdata.min_co2 < 750) {
-        lastdata.minPollLevel = "Medium"
-      } else if (lastdata.min_co2 > 750 && lastdata.min_co2 < 950) {
-        lastdata.minPollLevel = "High"
-      } else if (lastdata.min_co2 > 950 && lastdata.min_co2 < 1400) {
-        lastdata.minPollLevel = "Extreme High"
-      } else {
-        lastdata.minPollLevel = "Pollution Warning"
+      } else if ((lastdata.min_co2 > 1000 && lastdata.min_co2 <= 2000) || (lastdata.min_tvoc > 50 && lastdata.min_tvoc <= 325)) {
+        co2MaxVal = 2;
+        lastdata.minPollLevel = "Poor Air"
+      } else if ((lastdata.min_co2 > 2000 && lastdata.min_co2 <= 5000) || (lastdata.min_tvoc > 325 && lastdata.min_tvoc <= 500)) {
+        co2MaxVal = 3;
+        lastdata.minPollLevel = "Air Quality Alert"
+      } else if ((lastdata.min_co2 > 5000) || (lastdata.min_tvoc > 325 && lastdata.min_tvoc <= 500)) {
+        co2MaxVal = 4;
+        lastdata.minPollLevel = "Danger Level"
       }
 
-      if (lastdata.pollution.co2 <= 300) {
+      // let co2MaxVal = 0;
+      lastdata.pollLevel = "Good"
+      lastdata.pollColor = "light_green_color"
+      let showNotification = {};
+      if ((lastdata.pollution.co2 > 250 && lastdata.pollution.co2 <= 400) || (lastdata.pollution.co2 <= 5)) {
+        co2MaxVal = 0;
+        lastdata.pollLevel = "Good"
+        lastdata.pollColor = "light_green_color"
+      } else if ((lastdata.pollution.co2 > 400 && lastdata.pollution.co2 <= 1000) || (lastdata.pollution.co2 > 5 && lastdata.pollution.co2 <= 50)) {
+        co2MaxVal = 1;
         lastdata.pollLevel = "Normal"
-        lastdata.pollColor = "green_color"
-        lastdata.pollColor = "light_green_color"
-      } else if (lastdata.pollution.co2 > 300 && lastdata.pollution.co2 < 450) {
-        lastdata.pollLevel = "Average"
-        lastdata.pollColor = "light_green_color"
-      } else if (lastdata.pollution.co2 > 450 && lastdata.pollution.co2 < 750) {
-        lastdata.pollLevel = "Medium"
-        lastdata.pollColor = "light_orange_color"
-      } else if (lastdata.pollution.co2 > 750 && lastdata.pollution.co2 < 950) {
-        lastdata.pollLevel = "High"
         lastdata.pollColor = "orange_color"
-      } else if (lastdata.pollution.co2 > 950 && lastdata.pollution.co2 < 1400) {
-        lastdata.pollLevel = "Extreme High"
+      } else if ((lastdata.pollution.co2 > 1000 && lastdata.pollution.co2 <= 2000) || (lastdata.pollution.co2 > 50 && lastdata.pollution.co2 <= 325)) {
+        co2MaxVal = 2;
+        lastdata.pollLevel = "Poor Air"
+        lastdata.pollColor = "light_orange_color"
+        showNotification = {
+          title: "Air Quality Alert",
+          message: "We have measured medium level poor air quality",
+          type: "warning"
+        };
+      } else if ((lastdata.pollution.co2 > 2000 && lastdata.pollution.co2 <= 5000) || (lastdata.pollution.co2 > 325 && lastdata.pollution.co2 <= 500)) {
+        co2MaxVal = 3;
+        lastdata.pollLevel = "Air Quality Alert"
         lastdata.pollColor = "light_red_color"
-      } else {
-        lastdata.pollLevel = "Pollution Warning"
+        showNotification = {
+          title: "Air Quality Alert",
+          message: "We have measured poor air quality",
+          type: "danger"
+        };
+      } else if ((lastdata.pollution.co2 > 5000) || (lastdata.pollution.co2 > 325 && lastdata.pollution.co2 <= 500)) {
+        co2MaxVal = 4;
+        lastdata.pollLevel = "Danger Level"
         lastdata.pollColor = "red_color"
-        lastdata.pollColor = "light_green_color"
+        showNotification = {
+          title: "Air Quality Alert",
+          message: "We have measured danger level air quality",
+          type: "danger"
+        };
+      }
+
+      if (isAlertSubs && this.state.showAlert) {
+        if (this.state.showAlert == 6) {
+          showNotification = {
+            title: "Air Quality Alert",
+            message: "We have measured danger level air quality",
+            type: "danger"
+          };
+          userService.showNotification(showNotification)
+          this.setState({
+            showAlert: 1,
+          })
+        } else {
+          let showAlert = this.state.showAlert
+          this.setState({
+            showAlert: showAlert + 1,
+          })
+        }
+      }
+      if (isMailSubs && this.state.showMail) {
+        if (this.state.showMail == this.state.showMail) {
+
+          let alertTvoc = mailNotificationObj && mailNotificationObj.tvoc ? mailNotificationObj.tvoc : "50";
+          let alertCo2 = mailNotificationObj && mailNotificationObj.co2 ? mailNotificationObj.co2 : "400";
+          let alertEmail = mailNotificationObj && mailNotificationObj.email ? mailNotificationObj.email : "";
+          if (alertTvoc <= lastdata.pollution.tvoc || alertCo2 <= lastdata.pollution.co2) {
+            this.setState({
+              showMail: 1,
+            })
+            this.sendMail(lastdata, alertEmail);
+          }
+        } else {
+          let showMail = this.state.showMail
+          this.setState({
+            showMail: showMail + 1,
+          })
+        }
       }
 
       if (lastdata.max_temperature <= 0) {
-        lastdata.maxTempLevel = "Slow"
+        lastdata.maxTempLevel = "Cold"
       } else if (lastdata.max_temperature > 0 && lastdata.max_temperature < 10) {
         lastdata.maxTempLevel = "Cold"
       } else if (lastdata.max_temperature > 10 && lastdata.max_temperature < 20) {
-        lastdata.maxTempLevel = "Sunny"
+        lastdata.maxTempLevel = "Cool"
       } else if (lastdata.max_temperature > 20 && lastdata.max_temperature < 30) {
-        lastdata.maxTempLevel = "Hot & Sunny"
+        lastdata.maxTempLevel = "Warm"
       } else if (lastdata.max_temperature > 30 && lastdata.max_temperature < 40) {
-        lastdata.maxTempLevel = "Humidity & Sunny"
+        lastdata.maxTempLevel = "Hot"
       } else {
-        lastdata.maxTempLevel = "Extreme Hot & Sunny"
+        lastdata.maxTempLevel = "Hot & Sunny"
       }
 
       if (lastdata.min_temperature <= 0) {
-        lastdata.minTempLevel = "Slow"
+        lastdata.minTempLevel = "Cold"
       } else if (lastdata.min_temperature > 0 && lastdata.min_temperature < 10) {
         lastdata.minTempLevel = "Cold"
       } else if (lastdata.min_temperature > 10 && lastdata.min_temperature < 20) {
-        lastdata.minTempLevel = "Sunny"
+        lastdata.minTempLevel = "Cool"
       } else if (lastdata.min_temperature > 20 && lastdata.min_temperature < 30) {
-        lastdata.minTempLevel = "Hot & Sunny"
-      } else if (lastdata.min_temperature > 30 && lastdata.min_temperature < 40) {
-        lastdata.minTempLevel = "Humidity & Sunny"
+        lastdata.minTempLevel = "Warm"
+      } else if (lastdata.min_temperature > 30 && lastdata.min_temperature < 45) {
+        lastdata.minTempLevel = "Hot"
       } else {
-        lastdata.minTempLevel = "Extreme Hot & Sunny"
+        lastdata.minTempLevel = "Hot & Sunny"
       }
 
       if (lastdata.pollution.temperature <= 0) {
-        lastdata.tempLevel = "Slow"
+        lastdata.tempLevel = "Cold"
       } else if (lastdata.pollution.temperature > 0 && lastdata.pollution.temperature < 10) {
         lastdata.tempLevel = "Cold"
       } else if (lastdata.pollution.temperature > 10 && lastdata.pollution.temperature < 20) {
-        lastdata.tempLevel = "Sunny"
+        lastdata.tempLevel = "Cool"
       } else if (lastdata.pollution.temperature > 20 && lastdata.pollution.temperature < 30) {
-        lastdata.tempLevel = "Hot & Sunny"
+        lastdata.tempLevel = "Warm"
       } else if (lastdata.pollution.temperature > 30 && lastdata.pollution.temperature < 40) {
-        lastdata.tempLevel = "Humidity & Sunny"
+        lastdata.tempLevel = "Hot"
       } else {
-        lastdata.tempLevel = "Extreme Hot & Sunny"
+        lastdata.tempLevel = "Hot & Sunny"
       }
     }
     this.setState({
       latestData: lastdata
     })
-    console.log(lastdata)
+    // console.log(lastdata)
   }
 
   async getTodayData() {
     let todayDate = new Date();
-    let dateVal = this.getToday(this.state.selectedDate, true);
+    let dateVal = this.getToday(this.state.selectedDate, "date");
 
     let apiUrl = "http://35.193.238.179:9090/api/pollution/data?from_date=" + dateVal + "&to_date=" + dateVal + "&page=0&size=" + this.state.todayItems + "&sort=created,desc";
     let todayData = await userService.fetchGlobalApisWithoutAuth(apiUrl);
@@ -343,7 +502,7 @@ class DashboardClass extends React.Component {
       this.state.todayData.map((pData, key) => {
         var day = new Date(pData.timestamp).getDate();
 
-        let todayVal = this.getToday(new Date(pData.timestamp));
+        let todayVal = this.getToday(new Date(pData.timestamp), "time");
 
         if (dayWiseData && dayWiseData[day]) {
           // console.log("main if", key)
@@ -399,36 +558,53 @@ class DashboardClass extends React.Component {
         tempPollData.pollution = pData.pollution
         tempPollData.dayTemp = "Normal"
         tempPollData.timestamp = new Date(pData.timestamp)
-        if (pData.temperature > 32) {
-          tempPollData.marker = {
-            symbol: 'url(https://www.highcharts.com/samples/graphics/sun.png)'
-          }
-          tempPollData.dayTemp = "Sunny"
-        } else if (pData.temperature > 5 && pData.temperature <= 10) {
-          tempPollData.marker = {
-            symbol: 'url(https://www.highcharts.com/samples/graphics/snow.png)'
-          }
-          tempPollData.dayTemp = "Snow"
+        // if (pData.temperature > 32) {
+        //   // tempPollData.marker = {
+        //   //   symbol: 'url(https://www.highcharts.com/samples/graphics/sun.png)'
+        //   // }
+        //   tempPollData.dayTemp = "Hot"
+        // } else if (pData.temperature > 5 && pData.temperature <= 10) {
+        //   // tempPollData.marker = {
+        //   //   symbol: 'url(https://www.highcharts.com/samples/graphics/snow.png)'
+        //   // }
+        //   tempPollData.dayTemp = "Medium"
+        // }
+
+        if (pData.temperature <= 0) {
+          tempPollData.dayTemp = "Cold"
+        } else if (pData.temperature > 0 && pData.temperature < 10) {
+          tempPollData.dayTemp = "Cold"
+        } else if (pData.temperature > 10 && pData.temperature < 20) {
+          tempPollData.dayTemp = "Cool"
+        } else if (pData.temperature > 20 && pData.temperature < 30) {
+          tempPollData.dayTemp = "Warm"
+        } else if (pData.temperature > 30 && pData.temperature < 40) {
+          tempPollData.dayTemp = "Hot"
+        } else {
+          tempPollData.dayTemp = "Hot & Sunny"
         }
+
+        let colorCode = "27b35a"
+        if (pData.temperature <= 0) {
+          colorCode = "#27b35a"
+        } else if (pData.temperature > 0 && pData.temperature <= 10) {
+          colorCode = "#27b35a"
+        } else if (pData.temperature > 10 && pData.temperature <= 20) {
+          colorCode = "#2cb327"
+        } else if (pData.temperature > 20 && pData.temperature <= 30) {
+          colorCode = "#9ab00a"
+        } else if (pData.temperature > 30 && pData.temperature <= 40) {
+          colorCode = "#b0120a"
+        } else {
+          colorCode = "#b0120a"
+        }
+        tempPollData.color = colorCode;
 
         // pollutionDataArr.push(pData.co2);
         pollutionDataArr.push(tempPollData);
         pollutionLabels.push(pData.pollution);
         chartLabels.push(todayVal);
-        let colorCode = ""
-        if (pData.temperature <= 30) {
-          colorCode = "#27b35a"
-        } else if (pData.temperature > 30 && pData.temperature <= 40) {
-          colorCode = "#27b35a"
-        } else if (pData.temperature > 40 && pData.temperature <= 50) {
-          colorCode = "#2cb327"
-        } else if (pData.temperature > 50 && pData.temperature <= 60) {
-          colorCode = "#9ab00a"
-        } else if (pData.temperature > 60 && pData.temperature <= 70) {
-          colorCode = "#b0120a"
-        } else {
-          colorCode = "#b0120a"
-        }
+
         colorsLabels.push(colorCode);
       })
       // console.log(colorsLabels)
@@ -454,7 +630,7 @@ class DashboardClass extends React.Component {
       },
       xAxis: {
         title: {
-          text: 'Date & Time'
+          text: 'Time'
         },
         type: 'category',
         categories: chartLabels,
@@ -558,7 +734,7 @@ class DashboardClass extends React.Component {
         // if (key > 10) {
         //   return
         // }
-        let todayVal = this.getToday(new Date(pData.timestamp));
+        let todayVal = this.getToday(new Date(pData.timestamp), "time");
         if (dayWiseData && dayWiseData[day]) {
           // console.log("main if", key)
           let dayData = dayWiseData[day];
@@ -609,54 +785,62 @@ class DashboardClass extends React.Component {
         }
 
         let tempPollData = {}
-        let colorCode = ""
+        let colorCode = "#27b35a"
         if (this.state.pollGraphType == "co2") {
           tempPollData.y = pData.co2
-          tempPollData.pollution = pData.pollution
           tempPollData.timestamp = new Date(pData.timestamp)
 
           // pollutionDataArr.push(pData.co2);
-          pollutionDataArr.push(tempPollData);
           pollutionLabels.push(pData.pollution);
           chartLabels.push(todayVal);
-          if (pData.co2 <= 300) {
+          let pollValue = "Good";
+          if (pData.co2 > 250 && pData.co2 <= 400) {
             colorCode = "#27b35a"
-          } else if (pData.co2 > 300 && pData.co2 <= 400) {
-            colorCode = "#27b35a"
-          } else if (pData.co2 > 400 && pData.co2 <= 500) {
-            colorCode = "#2cb327"
-          } else if (pData.co2 > 500 && pData.co2 <= 600) {
-            colorCode = "#9ab00a"
-          } else if (pData.co2 > 600 && pData.co2 <= 700) {
+            pollValue = "Good";
+          } else if (pData.co2 > 400 && pData.co2 <= 1000) {
+            colorCode = "#27b329"
+            pollValue = "Normal";
+          } else if (pData.co2 > 1000 && pData.co2 <= 2000) {
+            colorCode = "#b08c0a"
+            pollValue = "Poor Air";
+          } else if (pData.co2 > 2000 && pData.co2 <= 5000) {
             colorCode = "#b0120a"
-          } else {
+            pollValue = "Air Quality Alert";
+          } else if (pData.co2 > 5000) {
             colorCode = "#b0120a"
+            pollValue = "Danger Level";
           }
+          tempPollData.pollution = pollValue
+          tempPollData.graphUnitType = "ppm"
+          pollutionDataArr.push(tempPollData);
         } else {
           tempPollData.y = pData.tvoc
-          tempPollData.pollution = pData.pollution
+          // tempPollData.pollution = pData.pollution
           tempPollData.timestamp = new Date(pData.timestamp)
-
+          let pollValue = "Good";
           // pollutionDataArr.push(pData.co2);
-          pollutionDataArr.push(tempPollData);
+          // pollutionDataArr.push(tempPollData);
           pollutionLabels.push(pData.pollution);
           chartLabels.push(todayVal);
           if (pData.tvoc <= 5) {
             colorCode = "#27b35a"
-          } else if (pData.tvoc > 5 && pData.tvoc <= 8) {
+            pollValue = "Good";
+          } else if (pData.tvoc > 5 && pData.tvoc <= 50) {
             colorCode = "#27b35a"
-          } else if (pData.tvoc > 8 && pData.tvoc <= 15) {
+            pollValue = "Normal";
+          } else if (pData.tvoc > 50 && pData.tvoc <= 325) {
             colorCode = "#2cb327"
-          } else if (pData.tvoc > 15 && pData.tvoc <= 30) {
+            pollValue = "Poor Air";
+          } else if (pData.tvoc > 325 && pData.tvoc <= 500) {
             colorCode = "#9ab00a"
-          } else if (pData.tvoc > 30 && pData.tvoc <= 50) {
-            colorCode = "#b0120a"
           } else {
             colorCode = "#b0120a"
+            pollValue = "Danger Level";
           }
+          tempPollData.pollution = pollValue
+          tempPollData.graphUnitType = "ppb"
+          pollutionDataArr.push(tempPollData);
         }
-
-
         colorsLabels.push(colorCode);
       })
       // console.log(colorsLabels)
@@ -675,14 +859,14 @@ class DashboardClass extends React.Component {
         // zoom: "xy"
       },
       title: {
-        text: 'Pollution Graph'
+        text: 'Air Quality Graph'
       },
       subtitle: {
-        text: 'Day Wise Pollution Graph'
+        text: 'Day Wise Air Quality Graph'
       },
       xAxis: {
         title: {
-          text: 'Date & Time'
+          text: 'Time'
         },
         type: 'category',
         categories: chartLabels,
@@ -711,10 +895,11 @@ class DashboardClass extends React.Component {
           let yValue = this.point.y;
           let nameValue = this.series.name;
           let keyValue = this.point.timestamp;
+          let unitValue = this.point.graphUnitType;
           // return '<b>' + this.x +
           //   '</b>: <b>' + barValue + ' %</b>';
           return '<span style="font-size:10px">' + keyValue + '</span><table><tr><td style="padding:0">' + nameValue + ': </td>' +
-            '<td style="padding:0"><b>' + yValue + ' ppm</b></td></tr><tr><td style="color:' + colorValue + ';padding:0">' + pollValue + '</td></tr></table>'
+            '<td style="padding:0"><b>' + yValue + ' ' + unitValue + '</b></td></tr><tr><td style="color:' + colorValue + ';padding:0">' + pollValue + '</td></tr></table>'
 
         }
       },
@@ -790,7 +975,7 @@ class DashboardClass extends React.Component {
               tmpData.push(pData.co2)
               tmpData.data = tmpData;
             }
-            if (pollData.name == "tVOC (ppm)") {
+            if (pollData.name == "tVOC (ppb)") {
               let tmpData = pollData.data;
               tmpData.push(pData.tvoc)
               tmpData.data = tmpData;
@@ -1201,39 +1386,40 @@ class DashboardClass extends React.Component {
         {/* <NotificationContainer/> */}
         <GridContainer>
           <GridItem xs={12} sm={6}>
-            <Card className={`dash-tiles ${latestData && latestData.pollColor ? latestData.pollColor : ""}`}>
+            <Card className={`dash-tiles ${latestData && latestData.pollColor ? latestData.pollColor : "light_green_color"}`}>
               <CardHeader color="success" stats icon>
                 <CardIcon color="success" className={"box-image-cover"} style={styletest}>
-                  <img src={flatIcon} alt="logo" />
+                  <img className="card_img" src={flatIcon} alt="logo" />
                 </CardIcon>
-                <p className={classes.cardCategory}>Current Pollution</p>
-                <h3 className={classes.cardTitle}>{latestData && latestData.pollLevel ? latestData.pollLevel : "Normal"}</h3>
-                <p>Max Pollution: {latestData && latestData.maxPollLevel ? latestData.maxPollLevel : "Normal"}</p>
-                <p>Min Pollution: {latestData && latestData.minPollLevel ? latestData.minPollLevel : "Normal"}</p>
+                <p className={classes.cardCategory + " white-text"}>Current Air Quality</p>
+                <h3 className={classes.cardTitle + " white-text"}>{latestData && latestData.pollLevel ? latestData.pollLevel : "Normal"}</h3>
+                <p>Max Air Quality: {latestData && latestData.maxPollLevel ? latestData.maxPollLevel : "Normal"}</p>
+                <p>Min Air Quality: {latestData && latestData.minPollLevel ? latestData.minPollLevel : "Normal"}</p>
               </CardHeader>
               <CardFooter stats>
-                <div className={classes.stats}>
+                <div className={classes.stats + " white-text"}>
                   <img
                     src={clock}
-                    className={clock_cover}
+                    className={clock_cover + " white-text"}
                     style={clock_style}
                     alt="time"
                   />
-                  <span>{latestData.pollution && latestData.pollution.created}</span>
+                  <span className="white-text">{latestData.pollution && latestData.pollution.created}</span>
                 </div>
               </CardFooter>
             </Card>
           </GridItem>
           <GridItem xs={12} sm={6}>
-            <Card className={"dash-tiles"}>
+            <Card className={"dash-tiles temp_card_color"}>
               <CardHeader color="danger" stats icon>
-                <CardIcon color="danger" className={test1} style={styletest1}>
-                  <img src={advert} alt="logo" />
+                <CardIcon color="success" className={test1} style={styletest1}>
+                  <img className="card_img" src={sunnycon} alt="logo" />
                 </CardIcon>
                 <p className={classes.cardCategory}>Temperature</p>
-                <h3 className={classes.cardTitle}>{latestData && latestData.tempLevel ? latestData.tempLevel + " (" + latestData.pollution.temperature + " °C)" : "Normal"}</h3>
-                <p>Max Temperature: {latestData && latestData.maxTempLevel ? latestData.maxTempLevel + " (" + latestData.max_temperature + " °C)" : "Normal"}</p>
-                <p>Min Temperature: {latestData && latestData.minTempLevel ? latestData.minTempLevel + " (" + latestData.min_temperature + " °C)" : "Normal"}</p>
+                {/* <h3 className={classes.cardTitle}>{latestData && latestData.tempLevel ? latestData.tempLevel + " (" + latestData.pollution.temperature + " °C)" : "Normal"}</h3> */}
+                <h3 className={classes.cardTitle}>{latestData && latestData.tempLevel ? latestData.pollution.temperature + " °C" : "Normal"}</h3>
+                <p>Max Temp: {latestData && latestData.maxTempLevel ? latestData.maxTempLevel + " (" + latestData.max_temperature + " °C)" : "Normal"}</p>
+                <p>Min Temp: {latestData && latestData.minTempLevel ? latestData.minTempLevel + " (" + latestData.min_temperature + " °C)" : "Normal"}</p>
               </CardHeader>
               <CardFooter stats>
                 <div className={classes.stats}>
@@ -1243,134 +1429,136 @@ class DashboardClass extends React.Component {
                     style={clock_style}
                     alt="time"
                   />
-                  <span>{latestData.pollution && latestData.pollution.created}</span>
+                  <span className="white-text">{latestData.pollution && latestData.pollution.created}</span>
                 </div>
               </CardFooter>
             </Card>
           </GridItem>
         </GridContainer>
         <GridContainer>
-          <FormGroup>
-            <TextField
-              label="Graph Type"
-              select
-              InputLabelProps={{ className: "required-label" }}
-              name="pollGraphType"
-              autoComplete="off"
-              // value={this.state.pollGraphType}
-              data-validators="isRequired,isAlpha"
-              // onChange={this.handleUserInput}
-              variant="outlined"
-              size="small"
-              margin="dense"
-              SelectProps={{
-                multiple: false,
-                value: this.state.pollGraphType,
-                onChange: this.handleUserInput
-              }}
-            >
-              <MenuItem
-                value={"co2"}
+          <div className="dashTimePanel">
+            <FormGroup>
+              <TextField
+                label="Graph Type"
+                select
+                InputLabelProps={{ className: "required-label" }}
+                name="pollGraphType"
+                autoComplete="off"
+                // value={this.state.pollGraphType}
+                data-validators="isRequired,isAlpha"
+                // onChange={this.handleUserInput}
+                variant="outlined"
+                size="small"
+                margin="dense"
+                SelectProps={{
+                  multiple: false,
+                  value: this.state.pollGraphType,
+                  onChange: this.handleUserInput
+                }}
               >
-                CO2
-              </MenuItem>
-              <MenuItem
-                value={"tvoc"}
+                <MenuItem
+                  value={"co2"}
+                >
+                  CO2
+                </MenuItem>
+                <MenuItem
+                  value={"tvoc"}
+                >
+                  tVoc
+                </MenuItem>
+              </TextField>
+            </FormGroup>
+            <FormGroup>
+              <TextField
+                label="Records"
+                select
+                InputLabelProps={{ className: "required-label" }}
+                name="todayItems"
+                autoComplete="off"
+                // value={this.state.todayItems}
+                data-validators="isRequired,isAlpha"
+                // onChange={this.handleUserInput}
+                variant="outlined"
+                size="small"
+                margin="dense"
+                SelectProps={{
+                  multiple: false,
+                  value: this.state.todayItems,
+                  onChange: this.handleUserInput
+                }}
               >
-                tVoc
-              </MenuItem>
-            </TextField>
-          </FormGroup>
-          <FormGroup>
-            <TextField
-              label="Records"
-              select
-              InputLabelProps={{ className: "required-label" }}
-              name="todayItems"
-              autoComplete="off"
-              // value={this.state.todayItems}
-              data-validators="isRequired,isAlpha"
-              // onChange={this.handleUserInput}
-              variant="outlined"
-              size="small"
-              margin="dense"
-              SelectProps={{
-                multiple: false,
-                value: this.state.todayItems,
-                onChange: this.handleUserInput
-              }}
-            >
-              <MenuItem
-                value={"2000"}
+                <MenuItem
+                  value={"2000"}
+                >
+                  Today's All Record
+                </MenuItem>
+                <MenuItem
+                  value={"10"}
+                >
+                  10
+                </MenuItem>
+                <MenuItem
+                  value={"20"}
+                >
+                  20
+                </MenuItem>
+                <MenuItem
+                  value={"50"}
+                >
+                  50
+                </MenuItem>
+                <MenuItem
+                  value={"100"}
+                >
+                  100
+                </MenuItem>
+                <MenuItem
+                  value={"200"}
+                >
+                  200
+                </MenuItem>
+              </TextField>
+            </FormGroup>
+            <FormControl >
+              <MuiPickersUtilsProvider
+                variant="outlined"
+                utils={DateFnsUtils}
               >
-                Today's All Record
-              </MenuItem>
-              <MenuItem
-                value={"10"}
-              >
-                10
-              </MenuItem>
-              <MenuItem
-                value={"20"}
-              >
-                20
-              </MenuItem>
-              <MenuItem
-                value={"50"}
-              >
-                50
-              </MenuItem>
-              <MenuItem
-                value={"100"}
-              >
-                100
-              </MenuItem>
-              <MenuItem
-                value={"200"}
-              >
-                200
-              </MenuItem>
-            </TextField>
-          </FormGroup>
-          <FormControl >
-            <MuiPickersUtilsProvider
-              variant="outlined"
-              utils={DateFnsUtils}
-            >
-              <KeyboardDatePicker
+                <KeyboardDatePicker
 
-                label="Start Date"
-                format="MM/dd/yyyy"
-                margin="normal"
-                className=""
-                id="start-date-picker-dialog"
-                InputLabelProps={{
-                  className: "required-label"
-                }}
-                InputProps={{ autoComplete: "off" }}
-                name="estDate"
-                animateYearScrolling={true}
-                value={this.state.startDate}
-                minDate={this.state.minSDate}
-                maxDate={this.state.maxSDate}
-                minDateMessage={enMsg.startMinDate}
-                maxDateMessage={enMsg.startMaxDate}
-                onChange={this.handleStartDate}
-                onError={this.handleStartDateError}
-                className="KeyboardDatePicker invoice_picker"
-                invalidDateMessage={enMsg.invalidDate}
-                KeyboardButtonProps={{
-                  "aria-label": "change date",
-                  className: "date-picker-span"
-                }}
+                  label="Start Date"
+                  format="MM/dd/yyyy"
+                  margin="normal"
+                  className=""
+                  id="start-date-picker-dialog"
+                  InputLabelProps={{
+                    className: "required-label"
+                  }}
+                  InputProps={{ autoComplete: "off" }}
+                  name="estDate"
+                  animateYearScrolling={true}
+                  value={this.state.startDate}
+                  minDate={this.state.minSDate}
+                  maxDate={this.state.maxSDate}
+                  minDateMessage={enMsg.startMinDate}
+                  maxDateMessage={enMsg.startMaxDate}
+                  onChange={this.handleStartDate}
+                  onError={this.handleStartDateError}
+                  className="KeyboardDatePicker invoice_picker"
+                  invalidDateMessage={enMsg.invalidDate}
+                  KeyboardButtonProps={{
+                    "aria-label": "change date",
+                    className: "date-picker-span"
+                  }}
+                />
+              </MuiPickersUtilsProvider>
+              <FormErrors
+                show={!this.state.startDateValid}
+                formErrors={this.state.formErrors}
+                fieldName="startDate"
               />
-            </MuiPickersUtilsProvider>
-            <FormErrors
-              show={!this.state.startDateValid}
-              formErrors={this.state.formErrors}
-              fieldName="startDate"
-            />
-          </FormControl>
+            </FormControl>
+          </div>
         </GridContainer>
         <GridContainer>
           <GridItem xs={12} sm={6}>
@@ -1393,52 +1581,59 @@ class DashboardClass extends React.Component {
           </GridItem>
         </GridContainer>
         <GridContainer>
-          <FormGroup>
-            <TextField
-              label="Records"
-              select
-              InputLabelProps={{ className: "required-label" }}
-              name="allItems"
-              autoComplete="off"
-              // value={this.state.allItems}
-              data-validators="isRequired,isAlpha"
-              // onChange={this.handleUserInput}
-              variant="outlined"
-              size="small"
-              margin="dense"
-              SelectProps={{
-                multiple: false,
-                value: this.state.allItems,
-                onChange: this.handleUserInputAll
-              }}
-            >
-              <MenuItem
-                value={"2000"}
+          <div className="dashTimePanel dashTimePanel2">
+            <FormGroup>
+              <TextField
+                label="Records"
+                select
+                InputLabelProps={{ className: "required-label" }}
+                name="allItems"
+                autoComplete="off"
+                // value={this.state.allItems}
+                data-validators="isRequired,isAlpha"
+                // onChange={this.handleUserInput}
+                variant="outlined"
+                size="small"
+                margin="dense"
+                SelectProps={{
+                  multiple: false,
+                  value: this.state.allItems,
+                  onChange: this.handleUserInputAll
+                }}
               >
-                All Record
-              </MenuItem>
-              <MenuItem
-                value={"100"}
-              >
-                100
-              </MenuItem>
-              <MenuItem
-                value={"200"}
-              >
-                200
-              </MenuItem>
-              <MenuItem
-                value={"500"}
-              >
-                500
-              </MenuItem>
-              <MenuItem
-                value={"1000"}
-              >
-                1000
-              </MenuItem>
-            </TextField>
-          </FormGroup>
+                <MenuItem
+                  value={"2000"}
+                >
+                  All Record
+                </MenuItem>
+                <MenuItem
+                  value={"100"}
+                >
+                  100
+                </MenuItem>
+                <MenuItem
+                  value={"200"}
+                >
+                  200
+                </MenuItem>
+                <MenuItem
+                  value={"500"}
+                >
+                  500
+                </MenuItem>
+                <MenuItem
+                  value={"1000"}
+                >
+                  1000
+                </MenuItem>
+                <MenuItem
+                  value={"10000"}
+                >
+                  10000
+                </MenuItem>
+              </TextField>
+            </FormGroup>
+          </div>
         </GridContainer>
         <GridContainer>
           <GridItem xs={12} sm={12}>

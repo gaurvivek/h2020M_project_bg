@@ -24,25 +24,15 @@ import { Button } from "@material-ui/core";
 import SettingsIcon from "@material-ui/icons/Settings";
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import dropdown from "assets/img/dropdown.png";
-import { SELECTED_ADNETWORK } from "__helpers/constants";
 import { useSelector, useDispatch } from "react-redux";
 
 
 const Sidebar = ({ ...props }) => {
   // verifies if routeName is the one active (in browser input)
   const [rotationVal, setRotationVal] = React.useState(180);
-  let selectedAdnetwork = JSON.parse(localStorage.getItem(SELECTED_ADNETWORK));
-  selectedAdnetwork = useSelector(state => state.adNetwork);
-  selectedAdnetwork = (selectedAdnetwork) ? selectedAdnetwork.adNetworkId : "";
-  // console.log(selectedAdnetwork);
-  const [adnetworkId, setAdnetworkId] = React.useState((selectedAdnetwork) ? selectedAdnetwork : "");
-  // const [showMenu, setShowMenu] = React.useState(selectedAdnetwork ? true : false);
+// const [showMenu, setShowMenu] = React.useState(selectedAdnetwork ? true : false);
   const [showMenu, setShowMenu] = React.useState(true);
-  if(showMenu){
-    if(selectedAdnetwork){
-      setShowMenu(false);
-    }
-  }
+
   // console.log(showMenu);
   let activeRouteName = [];
   function activeRoute(routeName) {

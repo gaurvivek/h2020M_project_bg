@@ -303,6 +303,11 @@ button.buttonlinkHeader span.count{
   margin: 0 0;
   margin-top: 30px;
 }
+.temp_card_color{
+  /* Permalink - use to edit and share this gradient: https://colorzilla.com/gradient-editor/#05745a+0,2fd8b0+100,05745a+100,000fff+100 */
+background: #05745a; /* Old browsers */
+background: linear-gradient(to bottom,  #594796 0%,#71d0f9 100%,#3f7085 100%,#000fff 100%) !important
+}
 .light_green_color{
   /* Permalink - use to edit and share this gradient: https://colorzilla.com/gradient-editor/#05745a+0,2fd8b0+100,05745a+100,000fff+100 */
 background: #05745a; /* Old browsers */
@@ -311,7 +316,110 @@ background: -webkit-linear-gradient(top,  #05745a 0%,#2fd8b0 100%,#05745a 100%,#
 background: linear-gradient(to bottom,  #05745a 0%,#2fd8b0 100%,#05745a 100%,#000fff 100%) !important; /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#05745a', endColorstr='#000fff',GradientType=0 ) !important; /* IE6-9 */
 }
+.orange_color{
+  background: linear-gradient(to bottom,  #3de709 0%,#7eb121 100%,#7eb121 100%,#d8d510 100%) !important
+}
+.light_orange_color{
+  background: linear-gradient(to bottom,  #e7ac09ad 0%,#d8ac1a 100%,#ecb210 100%,#faf606 100%) !important
+}
+.light_red_color{
+  background: linear-gradient(to bottom,  #e7a109c7 0%,#d88c1a 100%,#f7880a 100%,#fa9806 100%) !important
+}
+.red_color{
+  background: linear-gradient(to bottom,  #e73d09c7 0%,#d8661a 100%,#ec1f10 100%,#fa0606 100%) !important
+}
+.setting_cards{
+  background: #17182A !important
+}
 
+
+.Dashboard-wrapper-1{
+  background: #0F111D !important;
+}
+.Header-appBar-59{
+  background: #0F111D !important;
+}
+.Header-title-62{
+  color: #FFF !important;
+}
+.profile-box a{
+  color: #FFF !important;
+  margin-top: 14px !important;
+}
+.Header-container-60{
+  padding-left: 20px !important;
+}
+.sidebar-cover .Sidebar-sidebarWrapper{
+  background: #17182A !important;
+}
+div.Sidebar-logo{
+  background: #17182A !important;
+  border: 0;
+}
+.Sidebar-list-14{
+  margin: 0 !important;
+  background: none !important;
+  border-radius: 0 !important;
+}
+.MuiSvgIcon-root{
+  color: #FFF !important;
+}
+.MuiListItemText-root {
+  color: #FFF !important;
+}
+.Sidebar-logo-8:after{
+  background-color: transparent !important;
+}
+.recordFormCol {
+  display: inline-block;
+  width: 33.33%;
+  line-height: 90px;
+}
+.recordFormRow {
+  display: inline-block;
+  width: 100%;
+  padding: 0 5px;
+}
+.recordFormHead {
+  display: inline-block;
+  width: 100%;
+  color: #FFF;
+}
+.recordFormCol svg {
+  color: #FFF !important;
+  fill: white !important;
+}
+.MuiInputBase-root:hover.MuiInput-underline:before {
+  border-bottom: 1px solid #d2d2d2 !important;
+}
+.recordFormCol .newbtn {
+  background: #FFF;
+  padding: 7px 20px;
+}
+.dashTimePanel {
+  display: flex;
+  width: 100%;
+  align-items: center;
+}
+.dashTimePanel .MuiFormControl-marginNormal{
+  margin-top: 10px;
+}
+.dashTimePanel .MuiFormControl-root{
+  margin: 0 20px 0 0;
+}
+.dashTimePanel .MuiSelect-selectMenu{
+  color: #FFF;
+}
+.dashTimePanel .MuiInputBase-input {
+  color: #FFF;
+}
+.dashTimePanel .MuiSvgIcon-root {
+  color: #FFF;
+  fill: white !important;
+}
+.dashTimePanel2{
+  margin-top: 25px;
+}
 /*Theme CSS*/
 /* div.themeBgChange:after {background: #fff}
 div.cusSelected {background: #9a0b03 !important;color: #FFF;}
@@ -913,7 +1021,8 @@ div.addBlockContent{padding:0 15px;font-size:14px;}
   line-height: 33px;
 }
 .dash-tiles p{
-  color: #666666 !important;
+  color: #fff !important;
+  font-weight: bold;
 }
 .sidebar-cover a:hover{
   text-decoration:none !important;
@@ -2118,4 +2227,21 @@ div.addBlockContent{padding:0 15px;font-size:14px;}
       left: calc(50% - 48px);
   }
 }
-
+.white-text{
+  color: #FFF;
+  font-weight: bold;
+}
+.card_img{
+  width: 100px;
+  height: 100px;
+}
+.left-text{
+  text-align: left;
+}
+.fix-height{
+  height: 80px;
+} 
+.p-10{
+  padding: 10px;
+  margin: 5px;
+}

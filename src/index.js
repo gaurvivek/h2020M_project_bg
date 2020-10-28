@@ -41,9 +41,9 @@ import { PrivateRoute } from "components/PrivateRoute";
 
 import DashboardPage from "views/Dashboard/Dashboard";
 
-import ReactNotification from "react-notifications-component";
 import "react-notifications-component/dist/theme.css";
 import { NotificationContainer } from "react-notifications";
+import 'react-notifications/lib/notifications.css';
 import index from "./js/index";
 import { render } from "react-dom";
 import { Provider } from "react-redux";
@@ -52,8 +52,8 @@ import store from "./js/store/index";
 const Notification = () => {
   return (
     <Provider store={store}>
-      <div> 
-        <NotificationContainer/>
+      <div>
+        <NotificationContainer />
         {/* <p>API_URL: {window._env_.API_URL}</p> */}
         <Router history={hist}>
           <Switch>
@@ -85,24 +85,24 @@ const Notification = () => {
 };
 const hist = createBrowserHistory();
 if (navigator.storage && navigator.storage.persist)
-  navigator.storage.persisted().then(persistent=>{
+  navigator.storage.persisted().then(persistent => {
     if (persistent)
       console.log("Storage will not be cleared except by explicit user action");
     else
       console.log("Storage may be cleared by the UA under storage pressure.");
   });
-  // if (localStorage && !localStorage.getItem('size')) {
-  //   var i = 0;
-  //   try {
-  //       // Test up to 10 MB
-  //       for (i = 250; i <= 10000; i += 250) {
-  //           localStorage.setItem('test', new Array((i * 1024) + 1).join('a'));
-  //       }
-  //   } catch (e) {
-  //       localStorage.removeItem('test');
-  //       localStorage.setItem('size', i - 250);
-  //       alert(i - 250);            
-  //   }
-  // }
+// if (localStorage && !localStorage.getItem('size')) {
+//   var i = 0;
+//   try {
+//       // Test up to 10 MB
+//       for (i = 250; i <= 10000; i += 250) {
+//           localStorage.setItem('test', new Array((i * 1024) + 1).join('a'));
+//       }
+//   } catch (e) {
+//       localStorage.removeItem('test');
+//       localStorage.setItem('size', i - 250);
+//       alert(i - 250);            
+//   }
+// }
 
 ReactDOM.render(<Notification />, document.getElementById("root"));

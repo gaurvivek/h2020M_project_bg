@@ -45,6 +45,13 @@ export function clientTokenHeader() {
     return {};
   }
 }
+export function generalAuthTokenHeader() {
+  return {
+    Accept: "application/json",
+    // "Access-Control-Allow-Origin": "https://asgcp-int.adpersistence.com",
+    "Content-Type": "application/json",
+  };
+}
 export function reauthorizeTokenHeader() {
   // return authorization header with basic auth credentials
   let clientAuthToken = localStorage.getItem("clientAuthToken");

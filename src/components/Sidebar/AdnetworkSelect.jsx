@@ -68,16 +68,7 @@ import { userService } from "_services/user.service";
 import { DEFAULT_PROFILE_IMG, NO_USERNAME } from "__helpers/constants";
 import GridItem from "components/Grid/GridItem";
 import GridContainer from "components/Grid/GridContainer.jsx";
-import { STORED_ADNETWORK, DATA_LOADING } from "__helpers/constants";
-import { SELECTED_ADNETWORK } from "__helpers/constants";
-import { STORED_ADVERTISEMENT } from "__helpers/constants";
 import dropdown from "assets/img/dropdown.png";
-import { STORED_CAMPAIGN_ANALYTICS } from "__helpers/constants";
-import { STORED_ADVERTISEMENT_ANALYTICS } from "__helpers/constants";
-import { STORED_ASSETS_ANALYTICS } from "__helpers/constants";
-import { SELECTED_CAMPAIGN } from "__helpers/constants";
-import { FETCH_CATEGORIES, FETCH_AD_STATUS, FETCH_AD_MEDIUM, FETCH_AD_TYPE, FETCH_ASSET_TYPE, FETCH_ASSET_DISPLAY_TYPE, FETCH_CAMPAIGN_STATUS } from "__helpers/constants";
-import { FETCH_BRANDS } from "__helpers/constants";
 import { withRouter } from 'react-router'
 
 import { connect } from "react-redux";
@@ -114,16 +105,11 @@ const mapStateToProps = state => {
 class AdnetworkSelectFn extends React.Component {
   constructor(props) {
     super(props);
-    let adNetworksData = JSON.parse(localStorage.getItem(STORED_ADNETWORK));
-    let selectedAdnetworkData = JSON.parse(localStorage.getItem(SELECTED_ADNETWORK));
-    let selectedAdnetwork = (selectedAdnetworkData) ? selectedAdnetworkData.adNetworkId : "";
     this._isMounted = false;
     let spinner = document.getElementById('loadingSpinner');
     this.state = {
       openNotifcation: false,
-      adnetworkId: selectedAdnetwork ? selectedAdnetwork : "",
-      adNetworkJson: (adNetworksData) ? adNetworksData : [],
-      adnetworkData: (selectedAdnetworkData) ? selectedAdnetworkData : [],
+      
       loadSpinner: false,
       spinner: spinner,
       loading: false,

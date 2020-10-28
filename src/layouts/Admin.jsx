@@ -38,7 +38,6 @@ import dashboardStyle from "assets/jss/material-dashboard-react/layouts/dashboar
 import { DEFAULT_PROFILE_IMG, NO_USERNAME } from "__helpers/constants";
 import "react-notifications-component/dist/theme.css";
 import ReactNotification from "react-notifications-component";
-import { SELECTED_ADNETWORK } from "__helpers/constants";
 import { userService } from "_services/user.service";
 import moment from "moment";
 
@@ -77,7 +76,6 @@ class Dashboard extends React.Component {
     this.saveDataToLocalStorage = this.saveDataToLocalStorage.bind(this);
 
     let userDetail = JSON.parse(localStorage.getItem("userDetail"));
-    let selectedAdnetwork = JSON.parse(localStorage.getItem(SELECTED_ADNETWORK));
     let profileImage = DEFAULT_PROFILE_IMG;
     if (userDetail && userDetail.imageRef) {
       profileImage = userDetail.imageRef;
@@ -98,7 +96,6 @@ class Dashboard extends React.Component {
         profileImage: profileImage,
         username: username
       },
-      selectedAdnetwork: (selectedAdnetwork) ? selectedAdnetwork : [],
       localStorageData: {},
       hasError: "",
       error: "",

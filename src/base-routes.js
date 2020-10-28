@@ -3,7 +3,7 @@
 This File contain all route that will use in ./src/index.js & in navigations
 */
 import blur_image from "assets/img/darkgr.png";
-import logo from "assets/img/asglogo.png";
+import logo from "assets/img/asglogo.svg";
 
 // export const basePath = "/ab/asg";
 export const basePath = "";
@@ -26,6 +26,11 @@ export const baseRoutes = {
     path: `${basePath}/records`,
     pathName: "Records",
     useLink: `/records`
+  },
+  setting: {
+    path: `${basePath}/setting`,
+    pathName: "Setting",
+    useLink: `/setting`
   },
   profile: {
     path: "/profile",

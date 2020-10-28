@@ -27,6 +27,7 @@ import PermContactCalendarIcon from "@material-ui/icons/PermContactCalendar";
 // core components/views for Admin layout
 import Dashboard from "views/Dashboard/Dashboard.jsx";
 import Records from "views/Records/Records";
+import Setting from "views/Setting/Setting";
 // import Profile from "views/Profile/Profile.jsx";
 // import UserProfile from "views/UserProfile/UserProfile.jsx";
 // import TableList from "views/TableList/TableList.jsx";
@@ -52,6 +53,15 @@ const dashboardRoutes = [
     name: "Records",
     icon: PermContactCalendarIcon,
     component: Records,
+    layout: "/admin",
+    basePath: basePath,
+    showInSideBar: true
+  },
+  {
+    path: baseRoutes.setting.useLink,
+    name: "Setting",
+    icon: PermContactCalendarIcon,
+    component: Setting,
     layout: "/admin",
     basePath: basePath,
     showInSideBar: true

@@ -35,8 +35,8 @@ function Header({ ...props }) {
     [" " + classes[color]]: color
   });
   const tbStyle = {
-    backgroundColor: "#fff",
-    color: "#fff"
+    backgroundColor: "#0F111D",
+    // color: "#fff"
     //position: "fixed"
   };
 
@@ -45,7 +45,7 @@ function Header({ ...props }) {
       <Toolbar className={classes.container}>
         <div className={classes.flex}>
           {/* Here we create navbar brand, based on route name */}
-          <p style={{ color: "black" }} className={classes.title}>
+          <p style={{ color: "white" }} className={classes.title}>
             <b>{makeBrand()}</b>
           </p>
         </div>
