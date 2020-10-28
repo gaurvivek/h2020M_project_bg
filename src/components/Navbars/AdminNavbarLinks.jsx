@@ -384,140 +384,143 @@ class AdminNavbarLinksClass extends React.Component {
         {/* <div className={classes.manager + " menuSelectList"} >
             <AdnetworkSelect style={{zIndex: "99999"}} updateUserInfo={this.props.updateUserInfo} />
         </div> */}
-        <div className={classes.manager + " profile-box"}>
-          <Button
-            onClick={this.handleToggleNotificationList}
-            buttonRef={node => {
-              this.anchorNotificationList = node;
-            }}
-            color={"transparent"}
-            aria-owns={openNotifcationList ? "notification-menu-list-grow" : null}
-            aria-haspopup="true"
-            className="buttonlinkHeader"
-          >
-            <Notifications className="noti_count" />
-            <sup>{
-
-              messageCount > 0
-                ?
-                messageCount
-                :
-                null
-
-            }</sup>
-          </Button>
-          <Poppers
-            open={openNotifcationList}
-            anchorEl={this.anchorNotificationList}
-            transition
-            disablePortal
-            className={
-              classNames({ [classes.popperClose]: !openNotifcationList }) +
-              " " +
-              classes.popperNavXX + ' AdnetworkSelect-popperNav'
-            }
-            style={{ zIndex: "9999999" }}
-          >
-            {({ TransitionProps, placement }) => (
-              <Grow
-                {...TransitionProps}
-                id="notification-menu-list-grow"
-                style={{
-                  transformOrigin:
-                    placement === "bottom" ? "center top" : "center bottom"
-                }}
-              >
-                <Paper className="user-menu-box" >
-                  <ClickAwayListener onClickAway={this.handleCloseNotificationList}>
-                    <Box>
-                      <div className="top_noti">
-                        <h4>Notification List</h4>
-                      </div>
-                      <List>
-                        {
-
-                          messageList && messageList.length
-                            ?
-                            messageList.map((mList, key) => {
-                              if (mList.type == "POLLUTION") {
-                                return (
-                                  <>
-                                    <ListItem alignItems="flex-start" className="notificate_inner">
-                                      <ListItemAvatar>
-                                        <Avatar alt="Travis Howard" src={userImg} />
-                                      </ListItemAvatar>
-                                      <ListItemText
-                                        primary={mList.type}
-                                        secondary={
-                                          <React.Fragment>
-                                            <Typography
-                                              component="span"
-                                              variant="body2"
-                                              className={classes.inline}
-                                              color="textPrimary"
-                                            >
-                                              {mList.title}:
-                                            </Typography>
-                                            {" " + mList.message}
-                                          </React.Fragment>
-                                        }
-                                      />
-                                    </ListItem>
-                                    <Divider variant="inset" component="li" />
-                                  </>
-                                )
-                              }
-                            })
-                            :
-                            loading
-                              ?
-                              <p className="no_noti">Loading, please wait</p>
-                              :
-                              <p className="no_noti">No notification</p>
-                        }
-                      </List>
-                    </Box>
-                  </ClickAwayListener>
-                </Paper>
-              </Grow>
-            )}
-          </Poppers>
-
-          <Link
-            href={basePath + baseRoutes.dashboard.path} ///${user.username}
-            to={basePath + baseRoutes.dashboard.path} ///${user.username}
-            style={userNameStyle}
-          >
-            Challenging Wonders
-          </Link>
-          <Link
-            href={basePath + baseRoutes.dashboard.path} ///${user.username}
-            to={basePath + baseRoutes.dashboard.path} ///${user.username}
-          >
+        <Hidden smDown implementation="css">
+          <div className={classes.manager + " profile-box"}>
             <Button
+              onClick={this.handleToggleNotificationList}
               buttonRef={node => {
-                this.anchorProfile = node;
+                this.anchorNotificationList = node;
               }}
-              color={window.innerWidth > 959 ? "transparent" : "white"}
-              justIcon={window.innerWidth > 959}
-              simple={!(window.innerWidth > 959)}
-              aria-owns={openNotifcation ? "profile-menu-list-grow" : null}
+              color={"transparent"}
+              aria-owns={openNotifcationList ? "notification-menu-list-grow" : null}
               aria-haspopup="true"
-              onClick={this.handleToggleProfile}
-              className={classes.buttonLink + " profile-img-button"}
+              className="buttonlinkHeader"
             >
-              {" "}
-              <span>
-                <Avatar
-                  alt=""
-                  src={logo}
-                  className={user_image}
-                  style={styleuser}
-                />
-              </span>
+              <Notifications className="noti_count" />
+              <sup>{
+
+                messageCount > 0
+                  ?
+                  messageCount
+                  :
+                  null
+
+              }</sup>
             </Button>
+            <Poppers
+              open={openNotifcationList}
+              anchorEl={this.anchorNotificationList}
+              transition
+              disablePortal
+              className={
+                classNames({ [classes.popperClose]: !openNotifcationList }) +
+                " " +
+                classes.popperNavXX + ' AdnetworkSelect-popperNav'
+              }
+              style={{ zIndex: "9999999" }}
+            >
+              {({ TransitionProps, placement }) => (
+                <Grow
+                  {...TransitionProps}
+                  id="notification-menu-list-grow"
+                  style={{
+                    transformOrigin:
+                      placement === "bottom" ? "center top" : "center bottom"
+                  }}
+                >
+                  <Paper className="user-menu-box" >
+                    <ClickAwayListener onClickAway={this.handleCloseNotificationList}>
+                      <Box>
+                        <div className="top_noti">
+                          <h4>Notification List</h4>
+                        </div>
+                        <List>
+                          {
+
+                            messageList && messageList.length
+                              ?
+                              messageList.map((mList, key) => {
+                                if (mList.type == "POLLUTION") {
+                                  return (
+                                    <>
+                                      <ListItem alignItems="flex-start" className="notificate_inner">
+                                        <ListItemAvatar>
+                                          <Avatar alt="Travis Howard" src={userImg} />
+                                        </ListItemAvatar>
+                                        <ListItemText
+                                          primary={mList.type}
+                                          secondary={
+                                            <React.Fragment>
+                                              <Typography
+                                                component="span"
+                                                variant="body2"
+                                                className={classes.inline}
+                                                color="textPrimary"
+                                              >
+                                                {mList.title}:
+                                            </Typography>
+                                              {" " + mList.message}
+                                              <p>{mList.date}</p>
+                                            </React.Fragment>
+                                          }
+                                        />
+                                      </ListItem>
+                                      <Divider variant="inset" component="li" />
+                                    </>
+                                  )
+                                }
+                              })
+                              :
+                              loading
+                                ?
+                                <p className="no_noti">Loading, please wait</p>
+                                :
+                                <p className="no_noti">No notification</p>
+                          }
+                        </List>
+                      </Box>
+                    </ClickAwayListener>
+                  </Paper>
+                </Grow>
+              )}
+            </Poppers>
+
+            <Link
+              href={basePath + baseRoutes.dashboard.path} ///${user.username}
+              to={basePath + baseRoutes.dashboard.path} ///${user.username}
+              style={userNameStyle}
+            >
+              Challenging Wonders
           </Link>
-        </div>
+            <Link
+              href={basePath + baseRoutes.dashboard.path} ///${user.username}
+              to={basePath + baseRoutes.dashboard.path} ///${user.username}
+            >
+              <Button
+                buttonRef={node => {
+                  this.anchorProfile = node;
+                }}
+                color={window.innerWidth > 959 ? "transparent" : "white"}
+                justIcon={window.innerWidth > 959}
+                simple={!(window.innerWidth > 959)}
+                aria-owns={openNotifcation ? "profile-menu-list-grow" : null}
+                aria-haspopup="true"
+                onClick={this.handleToggleProfile}
+                className={classes.buttonLink + " profile-img-button"}
+              >
+                {" "}
+                <span>
+                  <Avatar
+                    alt=""
+                    src={logo}
+                    className={user_image}
+                    style={styleuser}
+                  />
+                </span>
+              </Button>
+            </Link>
+          </div>
+        </Hidden>
       </div>
     );
   }

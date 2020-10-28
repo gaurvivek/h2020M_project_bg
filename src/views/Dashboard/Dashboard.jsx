@@ -230,7 +230,7 @@ class DashboardClass extends React.Component {
     }
     return `${dd} ${mName} ${hh}:${min}:${sec}`;
   }
-  componentDidMount() {
+  async componentDidMount() {
 
     this.getLastData();
     this.getTodayData();
