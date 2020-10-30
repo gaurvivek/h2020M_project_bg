@@ -197,7 +197,7 @@ class SettingClass extends React.Component {
             } else {
                 showNotification = {
                     title: "Mail",
-                    message: "Mail Notification subscription started",
+                    message: "Mail notification subscription started",
                     type: "success"
                 };
             }
@@ -222,13 +222,13 @@ class SettingClass extends React.Component {
         if (alert) {
             showNotification = {
                 title: "Alerts",
-                message: "Alert Notification enabled",
+                message: "Alert notification enabled",
                 type: "success"
             };
         } else {
             showNotification = {
                 title: "Alerts",
-                message: "Alert Notification disabled",
+                message: "Alert notification disabled",
                 type: "info"
             };
         }
