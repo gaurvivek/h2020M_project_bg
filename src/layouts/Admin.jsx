@@ -279,7 +279,7 @@ class Dashboard extends React.Component {
     } = this.state;
     return (
       <div
-        className={classes.wrapper + " here"}
+        className={classes.wrapper + " here Dashboard-wrapper-1"}
         style={{ backgroundColor: "rgb(239, 235, 235)" }}
       >
         <div className="display-none storage-observation">no change</div>

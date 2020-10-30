@@ -877,7 +877,7 @@ class DashboardClass extends React.Component {
           // return '<b>' + this.x +
           //   '</b>: <b>' + barValue + ' %</b>';
           return '<span style="font-size:10px">' + keyValue + '</span><table><tr><td style="padding:0">' + nameValue + ': </td>' +
-            '<td style="padding:0"><b>' + yValue + ' ' + unitValue + '</b></td></tr><tr><td style="color:' + colorValue + ';padding:0">' + pollValue + '</td></tr></table>'
+            '<td style="padding:0"><b>' + "Measurement" + ' ' + unitValue + '</b></td></tr><tr><td style="color:' + colorValue + ';padding:0">' + pollValue + '</td></tr></table>'
 
         }
       },
@@ -1067,6 +1067,12 @@ class DashboardClass extends React.Component {
           text: 'Units',
           style: { color: '#fff' }
         },
+        labels: {
+          overflow: 'justify',
+          style: {
+            color: '#fff',
+          }
+        }
       },
       tooltip: {
         useHTML: true,
@@ -1076,10 +1082,10 @@ class DashboardClass extends React.Component {
           let colorValue = this.point.color;
           let yValue = this.point.y;
           let nameValue = this.series.name;
-          let keyValue = this.point.timestamp;
+          let keyValue = this.x;
           // return '<b>' + this.x +
           //   '</b>: <b>' + barValue + ' %</b>';
-          return '<span style="color:' + colorValue + ';padding:0;font-size:10px">Measurement</span><table><tr><td style="padding:0">' + nameValue + ': </td>' +
+          return '<span style="color:' + colorValue + ';padding:0;font-size:10px">Measurement</span><br><span style="font-size:10px">' + keyValue + '</span><table><tr><td style="padding:0">' + nameValue + ': </td>' +
             '<td style="padding:0"><b>' + yValue + '</b></td></tr></table>'
 
         }
@@ -1145,12 +1151,6 @@ class DashboardClass extends React.Component {
   }
 
   fetchData() {
-    // let apiUrl = "http://35.193.238.179:9090/api/pollution/data";
-    // let pollutionData = userService.fetchGlobalApisWithoutAuth(apiUrl);
-    // console.log(pollutionData)
-    // this.setState({
-    //   pollutionData: pollutionData,
-    // })
   }
 
   handleGraphData() {

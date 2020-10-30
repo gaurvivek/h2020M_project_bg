@@ -115,7 +115,8 @@ const Sidebar = ({ ...props }) => {
     </List>
   );
   var links = (
-    <List className={classes.list} style={{backgroundColor: "#EDEDED", marginRight: 18, marginLeft: 18, marginTop: 3}}>
+    // <List className={classes.list} style={{backgroundColor: "#EDEDED", marginRight: 18, marginLeft: 18, marginTop: 3}}>
+    <List className={classes.list + " Sidebar-list-14"} style={{marginRight: 18, marginLeft: 18, marginTop: 3}}>
       {routes.map((prop, key) => {
         var activePro = " ";
         var listItemClasses;
