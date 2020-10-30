@@ -81,7 +81,7 @@ import GoogleMapReact from 'google-map-react';
 import { last } from "@amcharts/amcharts4/.internal/core/utils/Array";
 import flatIcon from "assets/img/flat.svg"
 import sunnycon from "assets/img/sunny.svg"
-import logoIcon from "assets/img/asglogo.svg"
+import logoIcon from "assets/img/sLogo.png"
 
 
 am4core.useTheme(am4themes_animated);
@@ -119,8 +119,8 @@ const mapStateToProps = state => {
 const MapMarker = ({ text }) =>
   <div style={{
     color: 'white',
-    background: '#17182A',
-    padding: '15px 10px',
+    background: 'none 0% 0% repeat scroll rgb(255 255 255)',
+    padding: '8x 5px',
     display: 'inline-flex',
     textAlign: 'center',
     alignItems: 'center',
@@ -129,7 +129,7 @@ const MapMarker = ({ text }) =>
     transform: 'translate(-50%, -50%)'
   }}>
     <img
-      style={{ width: "100px" }}
+      style={{ width: "30px" }}
       src={logoIcon}
     />
     {/* {text} */}
@@ -158,7 +158,7 @@ class DashboardClass extends React.Component {
       tempHighChart: {},
       allDataHighChart: {},
       center: { lat: 26.261530, lng: 72.965993 },
-      zoom: 12,
+      zoom: 14,
       selectedDate: new Date(),
       todayItems: 20,
       allItems: 200,
@@ -230,6 +230,9 @@ class DashboardClass extends React.Component {
     }
     return `${dd} ${mName} ${hh}:${min}:${sec}`;
   }
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
   async componentDidMount() {
 
     this.getLastData();
@@ -242,11 +245,12 @@ class DashboardClass extends React.Component {
     // this.tempHighChart();
     this.backgroundM();
   }
-  backgroundM() {
+  async backgroundM() {
     this.interval = setInterval(
       () => this.backgroundDataApi(), 10000
     );
   }
+
   backgroundDataApi() {
     this.getLastData();
     this.getTodayData();
@@ -271,6 +275,11 @@ class DashboardClass extends React.Component {
     const data = {
       message: mailBody,
       email: emailAddr,
+      "tvoc": dataObj.pollution ? dataObj.pollution.tvoc : "N/A",
+      "co2": dataObj.pollution ? dataObj.pollution.co2 : "N/A",
+      "temperature": dataObj.pollution ? dataObj.pollution.temperature : "N/A",
+      "humidity": dataObj.pollution ? dataObj.pollution.humidity : "N/A",
+      "pressure": dataObj.pollution ? dataObj.pollution.pressure : "N/A"
     };
     let apiUrl = "http://35.193.238.179:9090/api/pollution/send-mail";
     try {
@@ -404,7 +413,7 @@ class DashboardClass extends React.Component {
       }
 
       if (isAlertSubs && this.state.showAlert) {
-        if (this.state.showAlert == this.state.showAlert) {
+        if (this.state.showAlert == 6) {
           // showNotification = {
           //   title: "Air Quality Alert",
           //   message: "We have measured danger level air quality",
@@ -427,7 +436,7 @@ class DashboardClass extends React.Component {
         }
       }
       if (isMailSubs && this.state.showMail) {
-        if (this.state.showMail == this.state.showMail) {
+        if (this.state.showMail == 6) {
 
           let alertTvoc = mailNotificationObj && mailNotificationObj.tvoc ? mailNotificationObj.tvoc : "50";
           let alertCo2 = mailNotificationObj && mailNotificationObj.co2 ? mailNotificationObj.co2 : "400";
@@ -525,38 +534,6 @@ class DashboardClass extends React.Component {
           dayData['data'].push(pData.co2)
           dayWiseData.map((dData, key) => {
 
-            // console.log(dData)
-
-
-
-            // if (dData && dData["day"] && dData['timestamp']) {
-            //   console.log("second if", key)
-            //   var dayLocal = new Date(dData['timestamp']).getDate();
-            //   if (dData["day"] && dData["day"] == day) {
-            //     console.log("third if", key)
-            //     // dData['data'].push(pData.co2)
-
-
-
-            //   } else {
-            //     console.log("third else", key)
-            //     let tempData = []
-            //     tempData.data = [pData.co2]
-            //     tempData.day = day
-            //     tempData.timestamp = pData.timestamp
-            //     tempData.name = pData.timestamp
-            //     dayWiseData[day] = tempData
-            //   }
-            // } else {
-            //   console.log("second else", key)
-            //   let tempData = []
-            //   tempData.data = [pData.co2]
-            //   tempData.day = day
-            //   tempData.timestamp = pData.timestamp
-            //   tempData.name = pData.timestamp
-            //   dayWiseData[day] = tempData
-            // }
-
           })
         } else {
           // console.log("main else", key)
@@ -573,17 +550,6 @@ class DashboardClass extends React.Component {
         tempPollData.pollution = pData.pollution
         tempPollData.dayTemp = "Normal"
         tempPollData.timestamp = new Date(pData.timestamp)
-        // if (pData.temperature > 32) {
-        //   // tempPollData.marker = {
-        //   //   symbol: 'url(https://www.highcharts.com/samples/graphics/sun.png)'
-        //   // }
-        //   tempPollData.dayTemp = "Hot"
-        // } else if (pData.temperature > 5 && pData.temperature <= 10) {
-        //   // tempPollData.marker = {
-        //   //   symbol: 'url(https://www.highcharts.com/samples/graphics/snow.png)'
-        //   // }
-        //   tempPollData.dayTemp = "Medium"
-        // }
 
         if (pData.temperature <= 0) {
           tempPollData.dayTemp = "Cold"
@@ -634,36 +600,48 @@ class DashboardClass extends React.Component {
     let tempHighChart = {
       chart: {
         type: 'spline',
+        backgroundColor: '#ffffff1c',
+        style: { color: '#fff' }
         // inverted: true,
         // zoom: "xy"
       },
       title: {
-        text: 'Temperature (°C) Graph'
+        text: 'Temperature (°C) Graph',
+        style: { color: '#fff' }
       },
       subtitle: {
-        text: 'Day Wise Temperature Graph'
+        text: 'Day Wise Temperature Graph',
+        style: { color: '#fff' }
       },
       xAxis: {
         title: {
-          text: 'Time'
+          text: 'Time',
+          style: { color: '#fff' },
         },
         type: 'category',
         categories: chartLabels,
         // categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
         labels: {
           formatter: function () {
-            return chartLabels[this.pos] + '°';
+            return chartLabels[this.pos];
+          },
+          style: {
+            color: '#fff',
           }
         }
       },
       yAxis: {
         title: {
-          text: 'Temperature (°C)'
+          text: 'Temperature (°C)',
+          style: { color: '#fff' },
         },
         type: 'logarithmic',
         min: 1,
         labels: {
-          overflow: 'justify'
+          overflow: 'justify',
+          style: {
+            color: '#fff',
+          }
         }
       },
       tooltip: {
@@ -723,7 +701,10 @@ class DashboardClass extends React.Component {
         }
       },
       legend: {
-        enabled: true
+        enabled: true,
+        itemStyle: {
+          color: 'fff'
+        }
       },
       credits: {
         enabled: false
@@ -731,6 +712,8 @@ class DashboardClass extends React.Component {
       series: [{
         name: 'Temperature',
         data: pollutionDataArr,
+        style: { color: '#fff' },
+        color: '#fff'
       }]
     };
     this.setState({
@@ -755,38 +738,6 @@ class DashboardClass extends React.Component {
           let dayData = dayWiseData[day];
           dayData['data'].push(pData.co2)
           dayWiseData.map((dData, key) => {
-
-            // console.log(dData)
-
-
-
-            // if (dData && dData["day"] && dData['timestamp']) {
-            //   console.log("second if", key)
-            //   var dayLocal = new Date(dData['timestamp']).getDate();
-            //   if (dData["day"] && dData["day"] == day) {
-            //     console.log("third if", key)
-            //     // dData['data'].push(pData.co2)
-
-
-
-            //   } else {
-            //     console.log("third else", key)
-            //     let tempData = []
-            //     tempData.data = [pData.co2]
-            //     tempData.day = day
-            //     tempData.timestamp = pData.timestamp
-            //     tempData.name = pData.timestamp
-            //     dayWiseData[day] = tempData
-            //   }
-            // } else {
-            //   console.log("second else", key)
-            //   let tempData = []
-            //   tempData.data = [pData.co2]
-            //   tempData.day = day
-            //   tempData.timestamp = pData.timestamp
-            //   tempData.name = pData.timestamp
-            //   dayWiseData[day] = tempData
-            // }
 
           })
         } else {
@@ -870,35 +821,47 @@ class DashboardClass extends React.Component {
     let highChartOption = {
       chart: {
         type: 'column',
+        backgroundColor: '#ffffff1c',
+        style: { color: '#fff' }
         // inverted: true,
         // zoom: "xy"
       },
       title: {
-        text: 'Air Quality Graph'
+        text: 'Air Quality Graph',
+        style: { color: '#fff' }
       },
       subtitle: {
-        text: 'Day Wise Air Quality Graph'
+        text: 'Day Wise Air Quality Graph',
+        style: { color: '#fff' }
       },
       xAxis: {
         title: {
-          text: 'Time'
+          text: 'Time',
+          style: { color: '#fff' },
         },
         type: 'category',
         categories: chartLabels,
         labels: {
           formatter: function () {
             return chartLabels[this.pos]
+          },
+          style: {
+            color: '#fff',
           }
         }
       },
       yAxis: {
         title: {
-          text: 'Units'
+          text: 'Units',
+          style: { color: '#fff' },
         },
         type: 'logarithmic',
         min: 1,
         labels: {
-          overflow: 'justify'
+          overflow: 'justify',
+          style: {
+            color: '#fff',
+          }
         }
       },
       tooltip: {
@@ -945,7 +908,10 @@ class DashboardClass extends React.Component {
         }
       },
       legend: {
-        enabled: true
+        enabled: true,
+        itemStyle: {
+          color: 'fff'
+        }
       },
       credits: {
         enabled: false
@@ -1022,7 +988,7 @@ class DashboardClass extends React.Component {
 
           let tVOCData = {}
           tVOCData.data = [pData.tvoc]
-          tVOCData.name = "tVOC (ppm)"
+          tVOCData.name = "tVOC (ppb)"
           tVOCData.color = '#FF0000'
           tVOCData.timestamp = new Date(pData.timestamp)
 
@@ -1068,16 +1034,20 @@ class DashboardClass extends React.Component {
     })
 
     let allDataHighChart = {
-      // chart: {
-      //   type: 'spline',
-      //   // inverted: true,
-      //   // zoom: "xy"
-      // },
+      chart: {
+        // type: 'spline',
+        // inverted: true,
+        // zoom: "xy"
+        backgroundColor: '#ffffff1c',
+        style: { color: '#fff' }
+      },
       title: {
-        text: 'Sequence Data'
+        text: 'Sequence Data',
+        style: { color: '#fff' }
       },
       subtitle: {
-        text: 'Day Wise Graph'
+        text: 'Day Wise Graph',
+        style: { color: '#fff' }
       },
       xAxis: {
         accessibility: {
@@ -1085,10 +1055,17 @@ class DashboardClass extends React.Component {
         },
         type: 'category',
         categories: chartLabels,
+        labels: {
+          overflow: 'justify',
+          style: {
+            color: '#fff',
+          }
+        }
       },
       yAxis: {
         title: {
-          text: 'Units'
+          text: 'Units',
+          style: { color: '#fff' }
         },
       },
       tooltip: {
@@ -1131,7 +1108,10 @@ class DashboardClass extends React.Component {
       legend: {
         layout: 'vertical',
         align: 'right',
-        verticalAlign: 'middle'
+        verticalAlign: 'middle',
+        itemStyle: {
+          color: 'fff'
+        }
       },
       column: {
         colorByPoint: true
@@ -1401,15 +1381,22 @@ class DashboardClass extends React.Component {
         {/* <NotificationContainer/> */}
         <GridContainer>
           <GridItem xs={12} sm={6}>
-            <Card className={`dash-tiles ${latestData && latestData.pollColor ? latestData.pollColor : "light_green_color"}`}>
+            <Card className={`dash-tiles box ${latestData && latestData.pollColor ? latestData.pollColor : "light_green_color"}`}>
               <CardHeader color="success" stats icon>
-                <CardIcon color="success" className={"box-image-cover"} style={styletest}>
+                <CardIcon color="success" className={"box-image-cover new-cover"} style={styletest}>
                   <img className="card_img" src={flatIcon} alt="logo" />
                 </CardIcon>
-                <p className={classes.cardCategory + " white-text"}>Current Air Quality</p>
-                <h3 className={classes.cardTitle + " white-text"}>{latestData && latestData.pollLevel ? latestData.pollLevel : "Normal"}</h3>
-                <p>Max Air Quality: {latestData && latestData.maxPollLevel ? latestData.maxPollLevel : "Normal"}</p>
-                <p>Min Air Quality: {latestData && latestData.minPollLevel ? latestData.minPollLevel : "Normal"}</p>
+                <p className={classes.cardCategory + " white-text current-air"}>Current Air Quality</p>
+                <h3 className={classes.cardTitle + " white-text air-quality"}>{latestData && latestData.pollLevel ? latestData.pollLevel : "Normal"}</h3>
+                <span className="full-width d-flex">
+                  {/* <span className="pollution-value"><p>Max Air Quality:</p> {latestData && latestData.maxPollLevel ? latestData.maxPollLevel : "Normal"}</span> */}
+                  <span className="tempratures"><p>Max Air Quality</p> {latestData && latestData.maxPollLevel ? latestData.maxPollLevel : "Normal"}</span>
+                  <span className="tempratures"><p>Min Air Quality</p> {latestData && latestData.minPollLevel ? latestData.minPollLevel : "Normal"}</span>
+                </span>
+                <span className="full-width d-flex">
+                  <span className="tempratures"><p>TVOC Measurement</p> {latestData && latestData.pollution ? latestData.pollution.tvoc + " ppb" : "N/A"}</span>
+                  <span className="tempratures"><p>CO2 Measurement</p> {latestData && latestData.pollution ? latestData.pollution.co2 + " ppm" : "N/A"}</span>
+                </span>
               </CardHeader>
               <CardFooter stats>
                 <div className={classes.stats + " white-text"}>
@@ -1425,16 +1412,23 @@ class DashboardClass extends React.Component {
             </Card>
           </GridItem>
           <GridItem xs={12} sm={6}>
-            <Card className={"dash-tiles temp_card_color"}>
+            <Card className={"dash-tiles box temp_card_color box_card"}>
               <CardHeader color="danger" stats icon>
-                <CardIcon color="success" className={test1} style={styletest1}>
+                <CardIcon color="success" className={test1 + " new-cover"} style={styletest1}>
                   <img className="card_img" src={sunnycon} alt="logo" />
                 </CardIcon>
-                <p className={classes.cardCategory}>Temperature</p>
+                {/* <p className={classes.cardCategory}>Temperature</p> */}
                 {/* <h3 className={classes.cardTitle}>{latestData && latestData.tempLevel ? latestData.tempLevel + " (" + latestData.pollution.temperature + " °C)" : "Normal"}</h3> */}
                 <h3 className={classes.cardTitle}>{latestData && latestData.tempLevel ? latestData.pollution.temperature + " °C" : "Normal"}</h3>
-                <p>Max Temp: {latestData && latestData.maxTempLevel ? latestData.maxTempLevel + " (" + latestData.max_temperature + " °C)" : "Normal"}</p>
-                <p>Min Temp: {latestData && latestData.minTempLevel ? latestData.minTempLevel + " (" + latestData.min_temperature + " °C)" : "Normal"}</p>
+                <span className="full-width d-flex">
+                  <span className="tempratures"><p>Maximun Temp:</p> {latestData && latestData.maxTempLevel ? latestData.max_temperature + " °C" : "Normal"}</span>
+                  <span className="tempratures"><p>Minimum Temp:</p> {latestData && latestData.minTempLevel ? latestData.min_temperature + " °C" : "Normal"}</span>
+                </span>
+                <span className="full-width d-flex">
+                  <span className="tempratures"><p>Temperature:</p> {latestData && latestData.minTempLevel ? latestData.pollution.temperature + " °C" : "Normal"}</span>
+                  <span className="tempratures"><p>Humidity:</p> {latestData && latestData.pollution ? latestData.pollution.humidity + " g.kg-1" : "N/A"}</span>
+                  <span className="tempratures"><p>Pressure</p> {latestData && latestData.pollution ? latestData.pollution.pressure + " pa" : "N/A"}</span>
+                </span>
               </CardHeader>
               <CardFooter stats>
                 <div className={classes.stats}>
@@ -1450,235 +1444,245 @@ class DashboardClass extends React.Component {
             </Card>
           </GridItem>
         </GridContainer>
-        <GridContainer>
-          <div className="dashTimePanel">
-            <FormGroup>
-              <TextField
-                label="Graph Type"
-                select
-                InputLabelProps={{ className: "required-label" }}
-                name="pollGraphType"
-                autoComplete="off"
-                // value={this.state.pollGraphType}
-                data-validators="isRequired,isAlpha"
-                // onChange={this.handleUserInput}
-                variant="outlined"
-                size="small"
-                margin="dense"
-                SelectProps={{
-                  multiple: false,
-                  value: this.state.pollGraphType,
-                  onChange: this.handleUserInput
-                }}
-              >
-                <MenuItem
-                  value={"co2"}
-                >
-                  CO2
-                </MenuItem>
-                <MenuItem
-                  value={"tvoc"}
-                >
-                  tVoc
-                </MenuItem>
-              </TextField>
-            </FormGroup>
-            <FormGroup>
-              <TextField
-                label="Records"
-                select
-                InputLabelProps={{ className: "required-label" }}
-                name="todayItems"
-                autoComplete="off"
-                // value={this.state.todayItems}
-                data-validators="isRequired,isAlpha"
-                // onChange={this.handleUserInput}
-                variant="outlined"
-                size="small"
-                margin="dense"
-                SelectProps={{
-                  multiple: false,
-                  value: this.state.todayItems,
-                  onChange: this.handleUserInput
-                }}
-              >
-                <MenuItem
-                  value={"2000"}
-                >
-                  Today's All Record
-                </MenuItem>
-                <MenuItem
-                  value={"10"}
-                >
-                  10
-                </MenuItem>
-                <MenuItem
-                  value={"20"}
-                >
-                  20
-                </MenuItem>
-                <MenuItem
-                  value={"50"}
-                >
-                  50
-                </MenuItem>
-                <MenuItem
-                  value={"100"}
-                >
-                  100
-                </MenuItem>
-                <MenuItem
-                  value={"200"}
-                >
-                  200
-                </MenuItem>
-              </TextField>
-            </FormGroup>
-            <FormControl >
-              <MuiPickersUtilsProvider
-                variant="outlined"
-                utils={DateFnsUtils}
-              >
-                <KeyboardDatePicker
 
-                  label="Start Date"
-                  format="MM/dd/yyyy"
-                  margin="normal"
-                  className=""
-                  id="start-date-picker-dialog"
-                  InputLabelProps={{
-                    className: "required-label"
+        <span className="box-with-bg">
+          <h3 className="heading">Day Wise Graph</h3>
+          <GridContainer>
+            <div className="dashTimePanel">
+              <FormGroup>
+                <TextField
+                  label="Graph Type"
+                  select
+                  InputLabelProps={{ className: "required-label" }}
+                  name="pollGraphType"
+                  autoComplete="off"
+                  // value={this.state.pollGraphType}
+                  data-validators="isRequired,isAlpha"
+                  // onChange={this.handleUserInput}
+                  // variant="outlined"
+                  variant="filled"
+                  size="small"
+                  margin="dense"
+                  SelectProps={{
+                    multiple: false,
+                    value: this.state.pollGraphType,
+                    onChange: this.handleUserInput
                   }}
-                  InputProps={{ autoComplete: "off" }}
-                  name="estDate"
-                  animateYearScrolling={true}
-                  value={this.state.startDate}
-                  minDate={this.state.minSDate}
-                  maxDate={this.state.maxSDate}
-                  minDateMessage={enMsg.startMinDate}
-                  maxDateMessage={enMsg.startMaxDate}
-                  onChange={this.handleStartDate}
-                  onError={this.handleStartDateError}
-                  className="KeyboardDatePicker invoice_picker"
-                  invalidDateMessage={enMsg.invalidDate}
-                  KeyboardButtonProps={{
-                    "aria-label": "change date",
-                    className: "date-picker-span"
+                >
+                  <MenuItem
+                    value={"co2"}
+                  >
+                    CO2
+                </MenuItem>
+                  <MenuItem
+                    value={"tvoc"}
+                  >
+                    tVoc
+                </MenuItem>
+                </TextField>
+              </FormGroup>
+              <FormGroup>
+                <TextField
+                  label="Records"
+                  select
+                  InputLabelProps={{ className: "required-label" }}
+                  name="todayItems"
+                  autoComplete="off"
+                  // value={this.state.todayItems}
+                  data-validators="isRequired,isAlpha"
+                  // onChange={this.handleUserInput}
+                  variant="filled"
+                  size="small"
+                  margin="dense"
+                  SelectProps={{
+                    multiple: false,
+                    value: this.state.todayItems,
+                    onChange: this.handleUserInput
                   }}
+                >
+                  <MenuItem
+                    value={"2000"}
+                  >
+                    Today's All Record
+                </MenuItem>
+                  <MenuItem
+                    value={"10"}
+                  >
+                    10
+                </MenuItem>
+                  <MenuItem
+                    value={"20"}
+                  >
+                    20
+                </MenuItem>
+                  <MenuItem
+                    value={"50"}
+                  >
+                    50
+                </MenuItem>
+                  <MenuItem
+                    value={"100"}
+                  >
+                    100
+                </MenuItem>
+                  <MenuItem
+                    value={"200"}
+                  >
+                    200
+                </MenuItem>
+                </TextField>
+              </FormGroup>
+              <FormControl >
+                <MuiPickersUtilsProvider
+                  inputVariant="standard"
+                  utils={DateFnsUtils}
+                >
+                  <KeyboardDatePicker
+                    inputVariant="standard"
+                    label="Start Date"
+                    format="MM/dd/yyyy"
+                    margin="normal"
+                    className=""
+                    id="start-date-picker-dialog"
+                    InputLabelProps={{
+                      className: "required-label"
+                    }}
+                    InputProps={{ autoComplete: "off" }}
+                    name="estDate"
+                    animateYearScrolling={true}
+                    value={this.state.startDate}
+                    minDate={this.state.minSDate}
+                    maxDate={this.state.maxSDate}
+                    minDateMessage={enMsg.startMinDate}
+                    maxDateMessage={enMsg.startMaxDate}
+                    onChange={this.handleStartDate}
+                    onError={this.handleStartDateError}
+                    className="KeyboardDatePicker invoice_picker"
+                    invalidDateMessage={enMsg.invalidDate}
+                    KeyboardButtonProps={{
+                      "aria-label": "change date",
+                      className: "date-picker-span"
+                    }}
+                  />
+                </MuiPickersUtilsProvider>
+                <FormErrors
+                  show={!this.state.startDateValid}
+                  formErrors={this.state.formErrors}
+                  fieldName="startDate"
                 />
-              </MuiPickersUtilsProvider>
-              <FormErrors
-                show={!this.state.startDateValid}
-                formErrors={this.state.formErrors}
-                fieldName="startDate"
-              />
-            </FormControl>
-          </div>
-        </GridContainer>
-        <GridContainer>
-          <GridItem xs={12} sm={6}>
-            <HighchartsReact
-              highcharts={Highcharts}
-              options={highChartOption}
-              className="chart-css"
-              style={{ width: "100%", height: "500px" }}
-              containerProps={{ style: { height: "500px" } }}
-            />
-          </GridItem>
-          <GridItem xs={12} sm={6}>
-            <HighchartsReact
-              highcharts={Highcharts}
-              options={tempHighChart}
-              className="chart-css"
-              style={{ width: "100%", height: "500px" }}
-              containerProps={{ style: { height: "500px" } }}
-            />
-          </GridItem>
-        </GridContainer>
-        <GridContainer>
-          <div className="dashTimePanel dashTimePanel2">
-            <FormGroup>
-              <TextField
-                label="Records"
-                select
-                InputLabelProps={{ className: "required-label" }}
-                name="allItems"
-                autoComplete="off"
-                // value={this.state.allItems}
-                data-validators="isRequired,isAlpha"
-                // onChange={this.handleUserInput}
-                variant="outlined"
-                size="small"
-                margin="dense"
-                SelectProps={{
-                  multiple: false,
-                  value: this.state.allItems,
-                  onChange: this.handleUserInputAll
-                }}
-              >
-                <MenuItem
-                  value={"2000"}
-                >
-                  All Record
-                </MenuItem>
-                <MenuItem
-                  value={"100"}
-                >
-                  100
-                </MenuItem>
-                <MenuItem
-                  value={"200"}
-                >
-                  200
-                </MenuItem>
-                <MenuItem
-                  value={"500"}
-                >
-                  500
-                </MenuItem>
-                <MenuItem
-                  value={"1000"}
-                >
-                  1000
-                </MenuItem>
-                <MenuItem
-                  value={"10000"}
-                >
-                  10000
-                </MenuItem>
-              </TextField>
-            </FormGroup>
-          </div>
-        </GridContainer>
-        <GridContainer>
-          <GridItem xs={12} sm={12}>
-            <HighchartsReact
-              highcharts={Highcharts}
-              options={allDataHighChart}
-              className="chart-css"
-              style={{ width: "100%", height: "500px" }}
-              containerProps={{ style: { height: "500px" } }}
-            />
-          </GridItem>
-        </GridContainer>
-        {/* <div id="pollutionData" style={{ width: "100%", height: "500px" }}></div> */}
-        <GridContainer>
-          <GridItem xs={12}>
-            <div style={{ height: '30vh', width: '100%' }}>
-              <GoogleMapReact
-                bootstrapURLKeys={{ key: "AIzaSyCcjnBZDQ0QfVA8D6jiXSiQWtvJ9sk56fA" }}
-                defaultCenter={this.state.center}
-                defaultZoom={this.state.zoom}
-              >
-                <MapMarker
-                  lat={this.state.center.lat}
-                  lng={this.state.center.lng}
-                  text="Server"
-                />
-              </GoogleMapReact>
+              </FormControl>
             </div>
-          </GridItem>
-        </GridContainer>
+          </GridContainer>
+          <GridContainer>
+            <GridItem xs={12} sm={6}>
+              <HighchartsReact
+                highcharts={Highcharts}
+                options={highChartOption}
+                className="chart-css"
+                style={{ width: "100%", height: "500px" }}
+                containerProps={{ style: { height: "500px" } }}
+              />
+            </GridItem>
+            <GridItem xs={12} sm={6}>
+              <HighchartsReact
+                highcharts={Highcharts}
+                options={tempHighChart}
+                className="chart-css"
+                style={{ width: "100%", height: "500px" }}
+                containerProps={{ style: { height: "500px" } }}
+              />
+            </GridItem>
+          </GridContainer>
+        </span>
+        <span className="box-with-bg">
+          <h3 className="heading">Heading</h3>
+          <GridContainer>
+            <div className="dashTimePanel dashTimePanel2">
+              <FormGroup>
+                <TextField
+                  label="Records"
+                  select
+                  InputLabelProps={{ className: "required-label" }}
+                  name="allItems"
+                  autoComplete="off"
+                  // value={this.state.allItems}
+                  data-validators="isRequired,isAlpha"
+                  // onChange={this.handleUserInput}
+                  variant="filled"
+                  size="small"
+                  margin="dense"
+                  SelectProps={{
+                    multiple: false,
+                    value: this.state.allItems,
+                    onChange: this.handleUserInputAll
+                  }}
+                >
+                  <MenuItem
+                    value={"2000"}
+                  >
+                    All Record
+                </MenuItem>
+                  <MenuItem
+                    value={"100"}
+                  >
+                    100
+                </MenuItem>
+                  <MenuItem
+                    value={"200"}
+                  >
+                    200
+                </MenuItem>
+                  <MenuItem
+                    value={"500"}
+                  >
+                    500
+                </MenuItem>
+                  <MenuItem
+                    value={"1000"}
+                  >
+                    1000
+                </MenuItem>
+                  <MenuItem
+                    value={"10000"}
+                  >
+                    10000
+                </MenuItem>
+                </TextField>
+              </FormGroup>
+            </div>
+          </GridContainer>
+          <GridContainer>
+            <GridItem xs={12} sm={12}>
+              <HighchartsReact
+                highcharts={Highcharts}
+                options={allDataHighChart}
+                className="chart-css"
+                style={{ width: "100%", height: "500px" }}
+                containerProps={{ style: { height: "500px" } }}
+              />
+            </GridItem>
+          </GridContainer>
+        </span>
+        {/* <div id="pollutionData" style={{ width: "100%", height: "500px" }}></div> */}
+        <span className="googlemap">
+          <GridContainer>
+            <GridItem xs={12}>
+              <div style={{ height: '30vh', width: '100%' }}>
+                <GoogleMapReact
+                  bootstrapURLKeys={{ key: "AIzaSyCcjnBZDQ0QfVA8D6jiXSiQWtvJ9sk56fA" }}
+                  defaultCenter={this.state.center}
+                  defaultZoom={this.state.zoom}
+                >
+                  <MapMarker
+                    lat={this.state.center.lat}
+                    lng={this.state.center.lng}
+                    text="Server"
+                  />
+                </GoogleMapReact>
+              </div>
+            </GridItem>
+          </GridContainer>
+        </span>
       </div>
     );
   }

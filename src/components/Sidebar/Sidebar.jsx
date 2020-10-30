@@ -284,7 +284,7 @@ const Sidebar = ({ ...props }) => {
           }}
         >
           {brand}
-          <div className={classes.sidebarWrapper + ' Sidebar-sidebarWrapper'}>
+          <div className={classes.sidebarWrapper + ' Sidebar-sidebarWrapper newsidebar'}>
             {/* <NavLink
                 className={classes.item+ " active"}
                 activeClassName="active"

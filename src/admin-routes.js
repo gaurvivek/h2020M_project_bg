@@ -50,7 +50,7 @@ const dashboardRoutes = [
   },
   {
     path: baseRoutes.records.useLink,
-    name: "Records",
+    name: "Weather Records",
     icon: PermContactCalendarIcon,
     component: Records,
     layout: "/admin",
@@ -59,7 +59,7 @@ const dashboardRoutes = [
   },
   {
     path: baseRoutes.setting.useLink,
-    name: "Setting",
+    name: "Settings",
     icon: PermContactCalendarIcon,
     component: Setting,
     layout: "/admin",

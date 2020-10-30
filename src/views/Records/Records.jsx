@@ -72,7 +72,7 @@ import DateFnsUtils from "@date-io/date-fns"
 
 am4core.useTheme(am4themes_animated);
 const columns = [
-  { id: "pollution", label: "Pollution Level" },
+  { id: "pollution", label: "Air Quality" },
   { id: "co2", label: "CO2 Value" },
   { id: "tvoc", label: "tVoc Value" },
   { id: "created", label: "Measurement Time" },
@@ -168,6 +168,7 @@ class RecordClass extends React.Component {
     this.handleEndDateError = this.handleEndDateError.bind(this);
     this.searchPollData = this.searchPollData.bind(this);
 
+    this.handleChangeRowsPerPageT = this.handleChangeRowsPerPageT.bind(this);
     this.handleStartDateT = this.handleStartDateT.bind(this);
     this.handleStartDateErrorT = this.handleStartDateErrorT.bind(this);
     this.handleEndDateT = this.handleEndDateT.bind(this);
@@ -479,10 +480,12 @@ class RecordClass extends React.Component {
     } = this.state;
     return (
       <div className="recordFormRow">
+        <span className="box-with-bg">
         {/* <NotificationContainer/> */}
-        <div className="recordFormHead white-text">Pollution Records</div>
-        <div className="recordFormCol">
-          <FormControl className="rec-inputs">
+        <div className="recordFormHead white-text">Air Quality Records</div>
+        <div className="full-width text-right">
+        <div className="recordFormCol widthauto">
+          <FormControl className="rec-inputs white-text">
             <MuiPickersUtilsProvider
               variant="outlined"
               utils={DateFnsUtils}
@@ -495,7 +498,7 @@ class RecordClass extends React.Component {
                 className=""
                 id="start-date-picker-dialog"
                 InputLabelProps={{
-                  className: "required-label"
+                  className: "required-label white-text"
                 }}
                 InputProps={{ autoComplete: "off" }}
                 name="estDate"
@@ -523,7 +526,7 @@ class RecordClass extends React.Component {
             />
           </FormControl>
         </div>
-        <div className="recordFormCol">
+        <div className="recordFormCol widthauto">
           <FormControl >
             <MuiPickersUtilsProvider
               // variant="outlined"
@@ -538,7 +541,7 @@ class RecordClass extends React.Component {
                 className=""
                 id="start-date-picker-dialog"
                 InputLabelProps={{
-                  className: "required-label"
+                  className: "required-label white-text"
                 }}
                 InputProps={{ autoComplete: "off" }}
                 name="estDate"
@@ -565,7 +568,7 @@ class RecordClass extends React.Component {
             />
           </FormControl>
         </div>
-        <div className="recordFormCol">
+        <div className="recordFormCol widthauto">
           <Button
             className="client newbtn greenbtn"
             type="button"
@@ -584,6 +587,8 @@ class RecordClass extends React.Component {
             </p>
           </Button>
         </div>
+        </div>
+        <div className="full-width">
         <GridContainer>
           <CardBody>
             <Paper className={(classes.root, this.cust_table_cover)}>
@@ -671,9 +676,13 @@ class RecordClass extends React.Component {
             </Paper>
           </CardBody>
         </GridContainer>
+        </div>
+        </span>
+        <span className="box-with-bg">
         <div className="recordFormRow">
-          <div className="recordFormHead white-text">Temperature Records</div>
-          <div className="recordFormCol">
+          <div className="recordFormHead white-text">Climate Records</div>
+          <div className="full-width text-right">
+          <div className="recordFormCol widthauto">
             <FormControl >
               <MuiPickersUtilsProvider
                 variant="outlined"
@@ -687,7 +696,7 @@ class RecordClass extends React.Component {
                   className=""
                   id="start-date-picker-dialog"
                   InputLabelProps={{
-                    className: "required-label"
+                    className: "required-label white-text"
                   }}
                   InputProps={{ autoComplete: "off" }}
                   name="estDate"
@@ -714,7 +723,7 @@ class RecordClass extends React.Component {
               />
             </FormControl>
           </div>
-          <div className="recordFormCol">
+          <div className="recordFormCol widthauto">
             <FormControl >
               <MuiPickersUtilsProvider
                 // variant="outlined"
@@ -729,7 +738,7 @@ class RecordClass extends React.Component {
                   className=""
                   id="start-date-picker-dialog"
                   InputLabelProps={{
-                    className: "required-label"
+                    className: "required-label white-text"
                   }}
                   InputProps={{ autoComplete: "off" }}
                   name="estDate"
@@ -756,7 +765,7 @@ class RecordClass extends React.Component {
               />
             </FormControl>
           </div>
-          <div className="recordFormCol">
+          <div className="recordFormCol widthauto">
             <Button
               className="client newbtn greenbtn"
               type="button"
@@ -774,6 +783,7 @@ class RecordClass extends React.Component {
                 Search
               </p>
             </Button>
+          </div>
           </div>
         </div>
         <GridContainer>
@@ -799,9 +809,9 @@ class RecordClass extends React.Component {
                       this.state.allTData.length
                       ? this.state.allTData
                         .slice(
-                          this.state.page * this.state.rowsPerPage,
-                          this.state.page * this.state.rowsPerPage +
-                          this.state.rowsPerPage
+                          this.state.pageT * this.state.rowsPerPageT,
+                          this.state.pageT * this.state.rowsPerPageT +
+                          this.state.rowsPerPageT
                         )
                         .map(row => {
                           return (
@@ -859,10 +869,12 @@ class RecordClass extends React.Component {
                 }}
                 onChangePage={this.handleChangePageT}
                 onChangeRowsPerPage={this.handleChangeRowsPerPageT}
+                color="#ffffff"
               />
             </Paper>
           </CardBody>
         </GridContainer>
+        </span>
       </div>
     );
   }

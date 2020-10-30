@@ -179,7 +179,7 @@ class AdminNavbarLinksClass extends React.Component {
       })
     }
   }
-  componentDidMount() {
+  async componentDidMount() {
     this._isMounted = true;
     if (this.props.reduxLoadFlag != undefined && this.state.reduxLoadFlag != this.props.reduxLoadFlag) {
       let userInfo = {};
@@ -204,6 +204,7 @@ class AdminNavbarLinksClass extends React.Component {
         adnetworkId: selectedAdnetwork ? selectedAdnetwork : "",
         adNetworkJson: (adnetworkData) ? adnetworkData : [],
       })
+      this.checkNotification();
       this.interval = setInterval(() => this.checkNotification(), 7000);
     }
     // userService.getAll().then(users => {
@@ -238,11 +239,12 @@ class AdminNavbarLinksClass extends React.Component {
     //   spinner.setAttribute('hidden', 'true');
     // }
   }
-  checkNotification = () => {
+  checkNotification = async () => {
+    this.setState({ loading: true })
     let showNotification = {};
     // let apiUrl = apiPath.isNewNotificationList;
     let apiUrl = "http://35.193.238.179:9090/api/pollution/notification?sort=date,desc";
-    const response = fetch(apiUrl, {
+    const response = await fetch(apiUrl, {
       method: "GET",
       headers: clientTokenHeader()
     })
@@ -270,6 +272,7 @@ class AdminNavbarLinksClass extends React.Component {
             messageList: data,
           })
         }
+        this.setState({ loading: false })
       })
       .catch(error => {
         showNotification = {
@@ -277,6 +280,7 @@ class AdminNavbarLinksClass extends React.Component {
           message: 'Bad response from server',
           type: "danger"
         };
+        this.setState({ loading: false })
       });
     userService.showNotification(showNotification);
   }
@@ -396,16 +400,18 @@ class AdminNavbarLinksClass extends React.Component {
               aria-haspopup="true"
               className="buttonlinkHeader"
             >
-              <Notifications className="noti_count" />
-              <sup>{
+              <span className="notificationicon">
+                <Notifications className="noti_count" />
+                <sup>{
 
-                messageCount > 0
-                  ?
-                  messageCount
-                  :
-                  null
+                  messageCount > 0
+                    ?
+                    messageCount
+                    :
+                    null
 
-              }</sup>
+                }</sup>
+              </span>
             </Button>
             <Poppers
               open={openNotifcationList}
@@ -443,7 +449,7 @@ class AdminNavbarLinksClass extends React.Component {
                                 if (mList.type == "POLLUTION") {
                                   return (
                                     <>
-                                      <ListItem alignItems="flex-start" className="notificate_inner">
+                                      <ListItem alignItems="flex-start" className="notificate_inner notificationslist">
                                         <ListItemAvatar>
                                           <Avatar alt="Travis Howard" src={userImg} />
                                         </ListItemAvatar>
@@ -509,7 +515,7 @@ class AdminNavbarLinksClass extends React.Component {
                 className={classes.buttonLink + " profile-img-button"}
               >
                 {" "}
-                <span>
+                <span className="avataricon">
                   <Avatar
                     alt=""
                     src={logo}

@@ -285,8 +285,10 @@ class SettingClass extends React.Component {
         return (
             <div className="recordFormRow">
                 {/* <NotificationContainer/> */}
-                <div className="recordFormHead white-text">Customize Alerts</div>
-                <div className="recordFormHead white-text">Alerts Values</div>
+                <div className="recordFormHead white-text mb-20">Customize Alerts</div>
+                
+            <span className="box-with-bg">
+                <div className="recordFormHead white-text">Threshold Values</div>
                 <GridContainer>
                     <div className="dashTimePanel dashTimePanel2">
                         <FormGroup className="setting_cards fix-height p-10">
@@ -299,7 +301,7 @@ class SettingClass extends React.Component {
                                 // value={this.state.tvoc}
                                 data-validators="isRequired,isAlpha"
                                 // onChange={this.handleUserInput}
-                                variant="outlined"
+                                variant="filled"
                                 size="small"
                                 margin="dense"
                                 SelectProps={{
@@ -326,7 +328,7 @@ class SettingClass extends React.Component {
                                 <MenuItem
                                     value={"1000"}
                                 >
-                                    {"More than  500"}
+                                    {"More than  1000"}
                                 </MenuItem>
                             </TextField>
                         </FormGroup>
@@ -340,7 +342,7 @@ class SettingClass extends React.Component {
                                 // value={this.state.co2}
                                 data-validators="isRequired,isAlpha"
                                 // onChange={this.handleUserInput}
-                                variant="outlined"
+                                variant="filled"
                                 size="small"
                                 margin="dense"
                                 SelectProps={{
@@ -373,10 +375,12 @@ class SettingClass extends React.Component {
                         </FormGroup>
                     </div>
                 </GridContainer>
+                </span>
+                <span className="box-with-bg">
                 <div className="recordFormHead white-text">Show Alerts</div>
                 <GridContainer>
                     <GridItem xs={12} sm={4}>
-                        <Card className={`dash-tiles setting_cards p-10`}>
+                        <Card className={`dash-tiles setting_cards p-10 allertonoff`}>
                             <CardHeader color="success" stats icon>
                                 <h5 className={"white-text left-text"}>Alert Message</h5>
                                 <SwitchToggle
@@ -388,10 +392,12 @@ class SettingClass extends React.Component {
                         </Card>
                     </GridItem>
                 </GridContainer>
+                </span>
+                <span className="box-with-bg">
                 <div className="recordFormHead white-text">Subscribe Alerts</div>
                 <GridContainer>
                     <div className="dashTimePanel dashTimePanel2">
-                        <FormGroup className="setting_cards p-10">
+                        <FormGroup className="full-width setting_cards p-10">
                             <TextField
                                 label="email"
                                 InputLabelProps={{ className: "required-label" }}
@@ -401,7 +407,7 @@ class SettingClass extends React.Component {
                                 // value={this.state.email}
                                 data-validators="isRequired,isAlpha"
                                 // onChange={this.handleUserInput}
-                                variant="outlined"
+                                variant="filled"
                                 size="small"
                                 margin="dense"
                                 value={this.state.email}
@@ -437,9 +443,11 @@ class SettingClass extends React.Component {
                                     }
                                 </p>
                             </Button>
+                                <p className="p-10"></p>
                         </div>
                     </div>
                 </GridContainer>
+                </span>
             </div>
         );
     }
