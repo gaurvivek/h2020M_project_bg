@@ -402,15 +402,13 @@ class AdminNavbarLinksClass extends React.Component {
             >
               <span className="notificationicon">
                 <Notifications className="noti_count" />
-                <sup>{
-
+                {
                   messageCount > 0
                     ?
-                    messageCount
+                    <sup>{messageCount}</sup>
                     :
                     null
-
-                }</sup>
+                }
               </span>
             </Button>
             <Poppers
