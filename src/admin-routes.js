@@ -23,6 +23,7 @@ import ViewDayIcon from "@material-ui/icons/ViewDay";
 import WorkIcon from "@material-ui/icons/Work";
 import PermContactCalendarIcon from "@material-ui/icons/PermContactCalendar";
 // import TrendingUpIcon from "@material-ui/icons/TrendingUp";
+import SettingIcon from "@material-ui/icons/Settings";
 
 // core components/views for Admin layout
 import Dashboard from "views/Dashboard/Dashboard.jsx";
@@ -60,7 +61,7 @@ const dashboardRoutes = [
   {
     path: baseRoutes.setting.useLink,
     name: "Settings",
-    icon: PermContactCalendarIcon,
+    icon: SettingIcon,
     component: Setting,
     layout: "/admin",
     basePath: basePath,
