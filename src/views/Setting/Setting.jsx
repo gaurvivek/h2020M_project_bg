@@ -66,6 +66,7 @@ import {
     EMAIL_REGEX,
     ALERT_NOTIFICATION,
     MAIL_NOTIFICATION,
+    SYNC_TIME,
 } from "__helpers/constants";
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
@@ -73,6 +74,7 @@ import am4themes_animated from "@amcharts/amcharts4/themes/animated";
 import { MuiPickersUtilsProvider, KeyboardDatePicker } from "@material-ui/pickers"
 import { FormErrors } from "components/Login/FormErrors"
 import DateFnsUtils from "@date-io/date-fns"
+import { generalAuthTokenHeader } from "__helpers/auth-header";
 
 
 am4core.useTheme(am4themes_animated);
@@ -115,6 +117,7 @@ class SettingClass extends React.Component {
         super(props);
         let alertNotificationValue = JSON.parse(localStorage.getItem(ALERT_NOTIFICATION));
         let mailNotificationObj = JSON.parse(localStorage.getItem(MAIL_NOTIFICATION));
+        let syncTimeObj = JSON.parse(localStorage.getItem(SYNC_TIME));
         this.dateUtility = new DateFnsUtils();
         this._isMounted = false;
         this.state = {
@@ -125,6 +128,7 @@ class SettingClass extends React.Component {
             email: mailNotificationObj && mailNotificationObj.email ? mailNotificationObj.email : "",
             // co2: "400",
             // email: "",
+            syncTime: syncTimeObj ? syncTimeObj : 15,
             formErrors: {
                 email: "",
             },
@@ -133,6 +137,7 @@ class SettingClass extends React.Component {
             isSubs: mailNotificationObj && mailNotificationObj.email ? true : false,
         };
         this.saveSubscription = this.saveSubscription.bind(this)
+        this.syncApi = this.syncApi.bind(this)
     }
 
     componentDidMount() {
@@ -241,6 +246,68 @@ class SettingClass extends React.Component {
         mailNotificationObj.co2 = this.state.co2
         localStorage.setItem(MAIL_NOTIFICATION, JSON.stringify(mailNotificationObj));
     }
+    handleUserInputSync = e => {
+        const name = e.target.name;
+        const value = e.target.value;
+
+        this.setState({ [name]: value }, () => this.syncApi());
+        let syncTimeObj = JSON.parse(localStorage.getItem(SYNC_TIME));
+        syncTimeObj = value
+        localStorage.setItem(SYNC_TIME, JSON.stringify(syncTimeObj));
+    };
+    async syncApi() {
+        const data = {
+            sleepTime: ""+this.state.syncTime,
+        };
+        this.setState({
+            loading: true,
+        })
+        let apiUrl = "http://35.193.238.179:9090/api/pollution/set-device-config";
+        try {
+            const response = await fetch(apiUrl, {
+                method: "POST",
+                headers: generalAuthTokenHeader(),
+                body: JSON.stringify(data),
+            })
+                .then(response => {
+                    if (response.status === 400) {
+
+                    } else if (response.status === 401) {
+
+                    } else if (response.ok) {
+                        let showNotification = {
+                            title: "Sync",
+                            message: "Device synchronous time updated.",
+                            type: "success"
+                        };
+                        userService.showNotification(showNotification)
+                    } else {
+
+                    }
+                    return response.json();
+                    // return response.text();
+                })
+                .then(data => {
+                    console.log(data)
+
+                    this.setState({
+                        loading: false,
+                    })
+                    return true;
+                })
+                .catch(error => {
+                    this.setState({
+                        loading: false,
+                    })
+                    return response;
+                });
+
+        } catch (error) {
+            this.setState({
+                loading: false,
+            })
+        }
+    }
     render() {
         const { classes } = this.props;
         const test = "test-cover";
@@ -281,174 +348,238 @@ class SettingClass extends React.Component {
             lastPollutionTime,
             totalRecords,
             pollutionData,
+            loading,
         } = this.state;
         return (
             <div className="recordFormRow">
                 {/* <NotificationContainer/> */}
-                <div className="recordFormHead white-text mb-20">Customize Alerts</div>
-                
-            <span className="box-with-bg">
-                <div className="recordFormHead white-text">Threshold Values</div>
-                <GridContainer>
-                    <div className="dashTimePanel dashTimePanel2">
-                        <FormGroup className="setting_cards fix-height p-10">
-                            <TextField
-                                label="tVoc"
-                                select
-                                InputLabelProps={{ className: "required-label" }}
-                                name="tvoc"
-                                autoComplete="off"
-                                // value={this.state.tvoc}
-                                data-validators="isRequired,isAlpha"
-                                // onChange={this.handleUserInput}
-                                variant="filled"
-                                size="small"
-                                margin="dense"
-                                SelectProps={{
-                                    multiple: false,
-                                    value: this.state.tvoc,
-                                    onChange: this.handleUserInputAll
-                                }}
-                            >
-                                <MenuItem
-                                    value={"50"}
-                                >
-                                    More than 50
-                                </MenuItem>
-                                <MenuItem
-                                    value={"325"}
-                                >
-                                    More than 325
-                                </MenuItem>
-                                <MenuItem
-                                    value={"500"}
-                                >
-                                    More than 500
-                                </MenuItem>
-                                <MenuItem
-                                    value={"1000"}
-                                >
-                                    {"More than  1000"}
-                                </MenuItem>
-                            </TextField>
-                        </FormGroup>
-                        <FormGroup className="setting_cards fix-height p-10">
-                            <TextField
-                                label="co2"
-                                select
-                                InputLabelProps={{ className: "required-label" }}
-                                name="co2"
-                                autoComplete="off"
-                                // value={this.state.co2}
-                                data-validators="isRequired,isAlpha"
-                                // onChange={this.handleUserInput}
-                                variant="filled"
-                                size="small"
-                                margin="dense"
-                                SelectProps={{
-                                    multiple: false,
-                                    value: this.state.co2,
-                                    onChange: this.handleUserInputAll
-                                }}
-                            >
-                                <MenuItem
-                                    value={"400"}
-                                >
-                                    More than 400
-                                </MenuItem>
-                                <MenuItem
-                                    value={"1000"}
-                                >
-                                    More than 1000
-                                </MenuItem>
-                                <MenuItem
-                                    value={"2000"}
-                                >
-                                    More than 2000
-                                </MenuItem>
-                                <MenuItem
-                                    value={"10000"}
-                                >
-                                    {"More than 2000"}
-                                </MenuItem>
-                            </TextField>
-                        </FormGroup>
+                <div className="recordFormHead white-text mb-20">Customize Device Sync Time</div>
+                <span className="box-with-bg">
+                    <div className="recordFormHead white-text">
+                        Sync Time(Sec) &nbsp;&nbsp;
+                        {
+                            loading
+                                ?
+                                <i className="fa fa-refresh fa-spin"></i>
+                                :
+                                null
+
+                        }
                     </div>
-                </GridContainer>
-                </span>
-                <span className="box-with-bg">
-                <div className="recordFormHead white-text">Show Alerts</div>
-                <GridContainer>
-                    <GridItem xs={12} sm={4}>
-                        <Card className={`dash-tiles setting_cards p-10 allertonoff`}>
-                            <CardHeader color="success" stats icon>
-                                <h5 className={"white-text left-text"}>Alert Message</h5>
-                                <SwitchToggle
-                                    // id={subscriber.id}
-                                    status={this.state.alert}
-                                    clickHandler={() => this.subsAlert()}
-                                />
-                            </CardHeader>
-                        </Card>
-                    </GridItem>
-                </GridContainer>
-                </span>
-                <span className="box-with-bg">
-                <div className="recordFormHead white-text">Subscribe Alerts</div>
-                <GridContainer>
-                    <div className="dashTimePanel dashTimePanel2">
-                        <FormGroup className="full-width setting_cards p-10">
-                            <TextField
-                                label="email"
-                                InputLabelProps={{ className: "required-label" }}
-                                name="email"
-                                text="email"
-                                autoComplete="off"
-                                // value={this.state.email}
-                                data-validators="isRequired,isAlpha"
-                                // onChange={this.handleUserInput}
-                                variant="filled"
-                                size="small"
-                                margin="dense"
-                                value={this.state.email}
-                                onChange={this.handleUserInput}
-                            />
-                            <FormErrors
-                                show={!this.state.emailValid}
-                                formErrors={this.state.formErrors}
-                                fieldName="email"
-                            />
-                        </FormGroup>
-                        <div className="recordFormCol">
-                            <Button
-                                className="client newbtn greenbtn"
-                                type="button"
-                                onClick={() => this.saveSubscription()}
-                                disabled={this.state.loading}
-                            >
-                                <p className="">
-                                    {this.state.loading && (
-                                        <CircularProgress
-                                            size={24}
-                                            className="buttonProgress"
-                                            color="secondary"
-                                        />
-                                    )}
-                                    {
-                                        this.state.isSubs
-                                            ?
-                                            "Update"
-                                            :
-                                            "Subscribe"
-                                    }
-                                </p>
-                            </Button>
-                                <p className="p-10"></p>
+                    <GridContainer>
+                        <div className="dashTimePanel dashTimePanel2">
+                            <FormGroup className="setting_cards fix-height p-10">
+                                <TextField
+                                    label="Sync Time"
+                                    select
+                                    InputLabelProps={{ className: "required-label" }}
+                                    name="syncTime"
+                                    autoComplete="off"
+                                    // value={this.state.syncTime}
+                                    data-validators="isRequired,isAlpha"
+                                    // onChange={this.handleUserInput}
+                                    variant="filled"
+                                    size="small"
+                                    margin="dense"
+                                    SelectProps={{
+                                        multiple: false,
+                                        value: this.state.syncTime,
+                                        onChange: this.handleUserInputSync
+                                    }}
+                                >
+                                    <MenuItem
+                                        value={5}
+                                    >
+                                        5 Seconds
+                                    </MenuItem>
+                                    <MenuItem
+                                        value={10}
+                                    >
+                                        10 Seconds
+                                    </MenuItem>
+                                    <MenuItem
+                                        value={15}
+                                    >
+                                        15 Seconds
+                                    </MenuItem>
+                                    <MenuItem
+                                        value={30}
+                                    >
+                                        30 Seconds
+                                    </MenuItem>
+                                    <MenuItem
+                                        value={60}
+                                    >
+                                        60 Seconds
+                                    </MenuItem>
+                                </TextField>
+                            </FormGroup>
                         </div>
-                    </div>
-                </GridContainer>
+                    </GridContainer>
                 </span>
-            </div>
+                <div className="recordFormHead white-text mb-20">Customize Alerts</div>
+                <span className="box-with-bg">
+                    <div className="recordFormHead white-text">Threshold Values</div>
+                    <GridContainer>
+                        <div className="dashTimePanel dashTimePanel2">
+                            <FormGroup className="setting_cards fix-height p-10">
+                                <TextField
+                                    label="tVoc"
+                                    select
+                                    InputLabelProps={{ className: "required-label" }}
+                                    name="tvoc"
+                                    autoComplete="off"
+                                    // value={this.state.tvoc}
+                                    data-validators="isRequired,isAlpha"
+                                    // onChange={this.handleUserInput}
+                                    variant="filled"
+                                    size="small"
+                                    margin="dense"
+                                    SelectProps={{
+                                        multiple: false,
+                                        value: this.state.tvoc,
+                                        onChange: this.handleUserInputAll
+                                    }}
+                                >
+                                    <MenuItem
+                                        value={"50"}
+                                    >
+                                        More than 50
+                                </MenuItem>
+                                    <MenuItem
+                                        value={"325"}
+                                    >
+                                        More than 325
+                                </MenuItem>
+                                    <MenuItem
+                                        value={"500"}
+                                    >
+                                        More than 500
+                                </MenuItem>
+                                    <MenuItem
+                                        value={"1000"}
+                                    >
+                                        {"More than  1000"}
+                                    </MenuItem>
+                                </TextField>
+                            </FormGroup>
+                            <FormGroup className="setting_cards fix-height p-10">
+                                <TextField
+                                    label="co2"
+                                    select
+                                    InputLabelProps={{ className: "required-label" }}
+                                    name="co2"
+                                    autoComplete="off"
+                                    // value={this.state.co2}
+                                    data-validators="isRequired,isAlpha"
+                                    // onChange={this.handleUserInput}
+                                    variant="filled"
+                                    size="small"
+                                    margin="dense"
+                                    SelectProps={{
+                                        multiple: false,
+                                        value: this.state.co2,
+                                        onChange: this.handleUserInputAll
+                                    }}
+                                >
+                                    <MenuItem
+                                        value={"400"}
+                                    >
+                                        More than 400
+                                </MenuItem>
+                                    <MenuItem
+                                        value={"1000"}
+                                    >
+                                        More than 1000
+                                </MenuItem>
+                                    <MenuItem
+                                        value={"2000"}
+                                    >
+                                        More than 2000
+                                </MenuItem>
+                                    <MenuItem
+                                        value={"10000"}
+                                    >
+                                        {"More than 2000"}
+                                    </MenuItem>
+                                </TextField>
+                            </FormGroup>
+                        </div>
+                    </GridContainer>
+                </span>
+                <span className="box-with-bg">
+                    <div className="recordFormHead white-text">Show Alerts</div>
+                    <GridContainer>
+                        <GridItem xs={12} sm={4}>
+                            <Card className={`dash-tiles setting_cards p-10 allertonoff`}>
+                                <CardHeader color="success" stats icon>
+                                    <h5 className={"white-text left-text"}>Alert Message</h5>
+                                    <SwitchToggle
+                                        // id={subscriber.id}
+                                        status={this.state.alert}
+                                        clickHandler={() => this.subsAlert()}
+                                    />
+                                </CardHeader>
+                            </Card>
+                        </GridItem>
+                    </GridContainer>
+                </span>
+                <span className="box-with-bg">
+                    <div className="recordFormHead white-text">Subscribe Alerts</div>
+                    <GridContainer>
+                        <div className="dashTimePanel dashTimePanel2">
+                            <FormGroup className="full-width setting_cards p-10">
+                                <TextField
+                                    label="email"
+                                    InputLabelProps={{ className: "required-label" }}
+                                    name="email"
+                                    text="email"
+                                    autoComplete="off"
+                                    // value={this.state.email}
+                                    data-validators="isRequired,isAlpha"
+                                    // onChange={this.handleUserInput}
+                                    variant="filled"
+                                    size="small"
+                                    margin="dense"
+                                    value={this.state.email}
+                                    onChange={this.handleUserInput}
+                                />
+                                <FormErrors
+                                    show={!this.state.emailValid}
+                                    formErrors={this.state.formErrors}
+                                    fieldName="email"
+                                />
+                            </FormGroup>
+                            <div className="recordFormCol">
+                                <Button
+                                    className="client newbtn greenbtn"
+                                    type="button"
+                                    onClick={() => this.saveSubscription()}
+                                    disabled={this.state.loading}
+                                >
+                                    <p className="">
+                                        {this.state.loading && (
+                                            <CircularProgress
+                                                size={24}
+                                                className="buttonProgress"
+                                                color="secondary"
+                                            />
+                                        )}
+                                        {
+                                            this.state.isSubs
+                                                ?
+                                                "Update"
+                                                :
+                                                "Subscribe"
+                                        }
+                                    </p>
+                                </Button>
+                                <p className="p-10"></p>
+                            </div>
+                        </div>
+                    </GridContainer>
+                </span>
+            </div >
         );
     }
 }

@@ -557,7 +557,8 @@ div.Sidebar-logo {
   background: #17182A !important;
   border: 0;
 }
-.MuiTablePagination-root{
+
+.MuiTablePagination-root {
   color: white !important;
 }
 
@@ -610,6 +611,7 @@ div.Sidebar-logo {
   background: #FFF;
   padding: 7px 20px;
 }
+
 .newbtn:hover {
   background-color: #FFF !important;
   /* padding: 7px 20px; */
@@ -2449,7 +2451,7 @@ height: 100px; */
 
 @media (max-width: 1199px) {
   /* .dash-tiles{
-  min-height: 138px;
+min-height: 138px;
 } */
   .dash-tiles p {
       line-height: 20px;
@@ -2525,7 +2527,7 @@ height: 100px; */
 
 @media (max-width: 992px) {
   /* .dash-tiles{
-  min-height: 160px;
+min-height: 160px;
 } */
   .dash-tiles p {
       font-size: 13px;
@@ -2550,14 +2552,14 @@ height: 100px; */
 
 @media (max-width: 959.95px) {
   /* .sidebar-cover { 
-  left :0px !important;
-  transform: none !important; 
+left :0px !important;
+transform: none !important; 
 }
 .sidebar-outer-cover{
-  display: block !important;  
+display: block !important;  
 }
 .Dashboard-mainPanel-2 {
-  width: calc(100% - 260px) !important;
+width: calc(100% - 260px) !important;
 } */
   .MuiIconButton-label {
       color: #999999;
@@ -2777,7 +2779,7 @@ height: 100px; */
       min-width: 70px !important;
   }
   /* .login-outer-cover button.MuiButtonBase-root{
-  padding: 4px 8px;
+padding: 4px 8px;
 } */
   .profile-content form .MuiGrid-grid-md-3 {
       max-width: 100%;
@@ -2946,6 +2948,7 @@ height: 100px; */
   display: block;
   text-align: center;
   /* font-size: 16px; */
+  margin-top: 15px;
 }
 
 .pollution-value p {
@@ -2970,6 +2973,7 @@ height: 100px; */
 .box-with-bg .dashTimePanel div {
   white-space: nowrap;
   min-width: 100px;
+  font-size: 14px;
 }
 
 .googlemap {
@@ -3115,6 +3119,24 @@ ul .MuiListItem-root.Mui-selected:hover {
 
 .dash-tiles.setting_cards {
   box-shadow: none;
+}
+
+.box-with-bg .dashTimePanel div .date-picker-span {
+  right: 0px;
+  position: absolute;
+}
+
+.required-label {
+  font-weight: bold;
+}
+
+.tempratures.small p {
+  font-size: 16px;
+}
+
+.dash-tiles span.white-text {
+  font-size: 15px;
+  margin-left: 5px;
 }
 
 @media(max-width: 575px) {

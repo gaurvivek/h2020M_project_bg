@@ -593,6 +593,7 @@ class RecordClass extends React.Component {
           <CardBody>
             <Paper className={(classes.root, this.cust_table_cover)}>
               <div className={(classes.tableWrapper, this.cust_table)}>
+                <div className="table-respopnsive">
                 <Table>
                   <TableHead className={this.tableh}>
                     <TableRow>
@@ -652,6 +653,7 @@ class RecordClass extends React.Component {
                       : null}
                   </TableBody>
                 </Table>
+                </div>
               </div>
               <TablePagination
                 rowsPerPageOptions={PER_PAGE_OPTIONS}
@@ -790,6 +792,7 @@ class RecordClass extends React.Component {
           <CardBody>
             <Paper className={(classes.root, this.cust_table_cover)}>
               <div className={(classes.tableWrapper, this.cust_table)}>
+              <div className="table-respopnsive">
                 <Table>
                   <TableHead className={this.tableh}>
                     <TableRow>
@@ -849,6 +852,7 @@ class RecordClass extends React.Component {
                       : null}
                   </TableBody>
                 </Table>
+                </div>
               </div>
               <TablePagination
                 rowsPerPageOptions={PER_PAGE_OPTIONS}

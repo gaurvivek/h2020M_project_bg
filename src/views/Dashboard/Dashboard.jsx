@@ -68,6 +68,7 @@ import {
   RECORD_PER_PAGE,
   ALERT_NOTIFICATION,
   MAIL_NOTIFICATION,
+  SYNC_TIME,
 } from "__helpers/constants";
 import * as am4core from "@amcharts/amcharts4/core";
 import * as am4charts from "@amcharts/amcharts4/charts";
@@ -141,6 +142,7 @@ class DashboardClass extends React.Component {
     this._isMounted = false;
     let alertNotificationValue = JSON.parse(localStorage.getItem(ALERT_NOTIFICATION));
     let mailNotificationObj = JSON.parse(localStorage.getItem(MAIL_NOTIFICATION));
+    let syncTimeObj = JSON.parse(localStorage.getItem(SYNC_TIME));
     this.state = {
       value: 0,
       page: 0,
@@ -158,7 +160,7 @@ class DashboardClass extends React.Component {
       tempHighChart: {},
       allDataHighChart: {},
       center: { lat: 26.261530, lng: 72.965993 },
-      zoom: 14,
+      zoom: 16,
       selectedDate: new Date(),
       todayItems: 20,
       allItems: 200,
@@ -185,6 +187,8 @@ class DashboardClass extends React.Component {
       alertEmail: mailNotificationObj && mailNotificationObj.email ? mailNotificationObj.email : "",
       showAlert: 1,
       showMail: 1,
+      syncTime: syncTimeObj ? syncTimeObj * 1000 : 15000,
+      // syncTime: 10000,
     };
     this.handleGraphData = this.handleGraphData.bind(this)
     this.handlePollutionGraphData = this.handlePollutionGraphData.bind(this)
@@ -243,11 +247,12 @@ class DashboardClass extends React.Component {
     // this.handlePollutionGraphData();
     // this.newHighPollChart();
     // this.tempHighChart();
+    clearInterval(this.interval);
     this.backgroundM();
   }
   async backgroundM() {
     this.interval = setInterval(
-      () => this.backgroundDataApi(), 10000
+      () => this.backgroundDataApi(), this.state.syncTime
     );
   }
 
@@ -413,7 +418,7 @@ class DashboardClass extends React.Component {
       }
 
       if (isAlertSubs && this.state.showAlert) {
-        if (this.state.showAlert == 6) {
+        if (this.state.showAlert == 4) {
           // showNotification = {
           //   title: "Air Quality Alert",
           //   message: "We have measured danger level air quality",
@@ -436,7 +441,7 @@ class DashboardClass extends React.Component {
         }
       }
       if (isMailSubs && this.state.showMail) {
-        if (this.state.showMail == 6) {
+        if (this.state.showMail == 4) {
 
           let alertTvoc = mailNotificationObj && mailNotificationObj.tvoc ? mailNotificationObj.tvoc : "50";
           let alertCo2 = mailNotificationObj && mailNotificationObj.co2 ? mailNotificationObj.co2 : "400";
@@ -496,6 +501,9 @@ class DashboardClass extends React.Component {
       } else {
         lastdata.tempLevel = "Hot & Sunny"
       }
+
+      let latestDataTime = this.getToday(new Date(lastdata.pollution.timestamp));
+      lastdata.latestDataTime = latestDataTime;
     }
     this.setState({
       latestData: lastdata
@@ -647,7 +655,7 @@ class DashboardClass extends React.Component {
       tooltip: {
         useHTML: true,
         formatter: function () {
-          console.log(this, this.point.low); // just to see , what data you can access
+          // console.log(this, this.point.low); // just to see , what data you can access
           let tempValue = this.point.dayTemp;
           let colorValue = this.point.color;
           let yValue = this.point.y;
@@ -867,7 +875,7 @@ class DashboardClass extends React.Component {
       tooltip: {
         useHTML: true,
         formatter: function () {
-          console.log(this, this.point.low); // just to see , what data you can access
+          // console.log(this, this.point.low); // just to see , what data you can access
           let pollValue = this.point.pollution;
           let colorValue = this.point.color;
           let yValue = this.point.y;
@@ -876,8 +884,8 @@ class DashboardClass extends React.Component {
           let unitValue = this.point.graphUnitType;
           // return '<b>' + this.x +
           //   '</b>: <b>' + barValue + ' %</b>';
-          return '<span style="font-size:10px">' + keyValue + '</span><table><tr><td style="padding:0">' + nameValue + ': </td>' +
-            '<td style="padding:0"><b>' + "Measurement" + ' ' + unitValue + '</b></td></tr><tr><td style="color:' + colorValue + ';padding:0">' + pollValue + '</td></tr></table>'
+          return '<span style="font-size:10px">' + keyValue + '</span><table><tr><td style="padding:0">' +  "Measurement" + ': </td>' +
+            '<td style="padding:0"><b>' + yValue + ' ' + unitValue + '</b></td></tr><tr><td style="color:' + colorValue + ';padding:0">' + pollValue + '</td></tr></table>'
 
         }
       },
@@ -1077,7 +1085,7 @@ class DashboardClass extends React.Component {
       tooltip: {
         useHTML: true,
         formatter: function () {
-          console.log(this, this.point.low); // just to see , what data you can access
+          // console.log(this, this.point.low); // just to see , what data you can access
           let pollValue = this.point.pollution;
           let colorValue = this.point.color;
           let yValue = this.point.y;
@@ -1406,7 +1414,7 @@ class DashboardClass extends React.Component {
                     style={clock_style}
                     alt="time"
                   />
-                  <span className="white-text">{latestData.pollution && latestData.pollution.created}</span>
+                  <span className="white-text">{latestData.latestDataTime && latestData.latestDataTime}</span>
                 </div>
               </CardFooter>
             </Card>
@@ -1425,9 +1433,9 @@ class DashboardClass extends React.Component {
                   <span className="tempratures"><p>Minimum Temp:</p> {latestData && latestData.minTempLevel ? latestData.min_temperature + " °C" : "Normal"}</span>
                 </span>
                 <span className="full-width d-flex">
-                  <span className="tempratures"><p>Temperature:</p> {latestData && latestData.minTempLevel ? latestData.pollution.temperature + " °C" : "Normal"}</span>
-                  <span className="tempratures"><p>Humidity:</p> {latestData && latestData.pollution ? latestData.pollution.humidity + " g.kg-1" : "N/A"}</span>
-                  <span className="tempratures"><p>Pressure</p> {latestData && latestData.pollution ? latestData.pollution.pressure + " pa" : "N/A"}</span>
+                  <span className="tempratures small"><p>Temperature:</p> {latestData && latestData.minTempLevel ? latestData.pollution.temperature + " °C" : "Normal"}</span>
+                  <span className="tempratures small"><p>Humidity:</p> {latestData && latestData.pollution ? latestData.pollution.humidity + " g.kg-1" : "N/A"}</span>
+                  <span className="tempratures small"><p>Pressure</p> {latestData && latestData.pollution ? latestData.pollution.pressure + " pa" : "N/A"}</span>
                 </span>
               </CardHeader>
               <CardFooter stats>
@@ -1438,7 +1446,7 @@ class DashboardClass extends React.Component {
                     style={clock_style}
                     alt="time"
                   />
-                  <span className="white-text">{latestData.pollution && latestData.pollution.created}</span>
+                  <span className="white-text">{latestData.latestDataTime && latestData.latestDataTime}</span>
                 </div>
               </CardFooter>
             </Card>
