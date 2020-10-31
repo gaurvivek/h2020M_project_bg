@@ -20,6 +20,7 @@ import clock from "assets/img/clock.png";
 import enMsg from "__helpers/locale/en/en";
 import AddAlert from "@material-ui/icons/AddAlert";
 import { Chart } from "react-google-charts";
+import { CSVLink, CSVDownload } from "react-csv";
 
 
 import {
@@ -72,11 +73,17 @@ import DateFnsUtils from "@date-io/date-fns"
 
 am4core.useTheme(am4themes_animated);
 const columns = [
-  { id: "pollution", label: "Air Quality" },
+  { id: "air_pollution", label: "Air Quality" },
   { id: "co2", label: "CO2 Value" },
   { id: "tvoc", label: "tVoc Value" },
   { id: "created", label: "Measurement Time" },
   // { id: "created_at", label: "Creation Date" },
+];
+let csvAirHeaders = [
+  { key: "air_pollution", label: "Air Quality" },
+  { key: "co2", label: "CO2 Value" },
+  { key: "tvoc", label: "tVoc Value" },
+  { key: "created", label: "Measurement Time" },
 ];
 const columnsTemp = [
   { id: "humidity", label: "Humidity Level" },
@@ -84,6 +91,12 @@ const columnsTemp = [
   { id: "temperature", label: "Temperature Value" },
   { id: "created", label: "Measurement Time" },
   // { id: "created_at", label: "Creation Date" },
+];
+let csvTempHeaders = [
+  { key: "humidity", label: "Humidity Level" },
+  { key: "pressure", label: "Pressure Value" },
+  { key: "temperature", label: "Temperature Value" },
+  { key: "created", label: "Measurement Time" },
 ];
 const ref = React.createRef();
 const options = {
@@ -477,407 +490,415 @@ class RecordClass extends React.Component {
       lastPollutionTime,
       totalRecords,
       pollutionData,
+      allPData,
+      allTData,
     } = this.state;
     return (
       <div className="recordFormRow">
         <span className="box-with-bg">
-        {/* <NotificationContainer/> */}
-        <div className="recordFormHead white-text">Air Quality Records</div>
-        <div className="full-width text-right">
-        <div className="recordFormCol widthauto">
-          <FormControl className="rec-inputs white-text">
-            <MuiPickersUtilsProvider
-              variant="outlined"
-              utils={DateFnsUtils}
-            >
-              <KeyboardDatePicker
+          {/* <NotificationContainer/> */}
+          <div className="recordFormHead white-text">Air Quality Records</div>
+          <div className="full-width text-right">
+            <div className="recordFormCol widthauto">
+              <FormControl className="rec-inputs white-text">
+                <MuiPickersUtilsProvider
+                  variant="outlined"
+                  utils={DateFnsUtils}
+                >
+                  <KeyboardDatePicker
 
-                label="Start Date"
-                format="MM/dd/yyyy"
-                margin="normal"
-                className=""
-                id="start-date-picker-dialog"
-                InputLabelProps={{
-                  className: "required-label white-text"
-                }}
-                InputProps={{ autoComplete: "off" }}
-                name="estDate"
-                animateYearScrolling={true}
-                value={this.state.startDate}
-                minDate={this.state.minSDate}
-                maxDate={this.state.maxSDate}
-                minDateMessage={enMsg.startMinDate}
-                maxDateMessage={enMsg.startMaxDate}
-                onChange={this.handleStartDate}
-                onError={this.handleStartDateError}
-                className="KeyboardDatePicker invoice_picker"
-                invalidDateMessage={enMsg.invalidDate}
-                KeyboardButtonProps={{
-                  "aria-label": "change date",
-                  className: "date-picker-span"
-                }}
-                size="small"
-              />
-            </MuiPickersUtilsProvider>
-            <FormErrors
-              show={!this.state.startDateValid}
-              formErrors={this.state.formErrors}
-              fieldName="startDate"
-            />
-          </FormControl>
-        </div>
-        <div className="recordFormCol widthauto">
-          <FormControl >
-            <MuiPickersUtilsProvider
-              // variant="outlined"
-              utils={DateFnsUtils}
-
-            >
-              <KeyboardDatePicker
-
-                label="End Date"
-                format="MM/dd/yyyy"
-                margin="normal"
-                className=""
-                id="start-date-picker-dialog"
-                InputLabelProps={{
-                  className: "required-label white-text"
-                }}
-                InputProps={{ autoComplete: "off" }}
-                name="estDate"
-                animateYearScrolling={true}
-                value={this.state.endDate}
-                minDate={this.state.minEDate}
-                maxDate={this.state.maxEDate}
-                minDateMessage={enMsg.endMinDate}
-                maxDateMessage={enMsg.endMaxDate}
-                onChange={this.handleEndDate}
-                onError={this.handleEndDateError}
-                className="KeyboardDatePicker invoice_picker"
-                invalidDateMessage={enMsg.invalidDate}
-                KeyboardButtonProps={{
-                  "aria-label": "change date",
-                  className: "date-picker-span"
-                }}
-              />
-            </MuiPickersUtilsProvider>
-            <FormErrors
-              show={!this.state.startDateValid}
-              formErrors={this.state.formErrors}
-              fieldName="startDate"
-            />
-          </FormControl>
-        </div>
-        <div className="recordFormCol widthauto">
-          <Button
-            className="client newbtn greenbtn"
-            type="button"
-            onClick={() => this.searchPollData()}
-            disabled={!this.validateForm() || this.state.loading}
-          >
-            <p>
-              {this.state.loading && (
-                <CircularProgress
-                  size={24}
-                  className="buttonProgress"
-                  color="secondary"
+                    label="Start Date"
+                    format="MM/dd/yyyy"
+                    margin="normal"
+                    className=""
+                    id="start-date-picker-dialog"
+                    InputLabelProps={{
+                      className: "required-label white-text"
+                    }}
+                    InputProps={{ autoComplete: "off" }}
+                    name="estDate"
+                    animateYearScrolling={true}
+                    value={this.state.startDate}
+                    minDate={this.state.minSDate}
+                    maxDate={this.state.maxSDate}
+                    minDateMessage={enMsg.startMinDate}
+                    maxDateMessage={enMsg.startMaxDate}
+                    onChange={this.handleStartDate}
+                    onError={this.handleStartDateError}
+                    className="KeyboardDatePicker invoice_picker"
+                    invalidDateMessage={enMsg.invalidDate}
+                    KeyboardButtonProps={{
+                      "aria-label": "change date",
+                      className: "date-picker-span"
+                    }}
+                    size="small"
+                  />
+                </MuiPickersUtilsProvider>
+                <FormErrors
+                  show={!this.state.startDateValid}
+                  formErrors={this.state.formErrors}
+                  fieldName="startDate"
                 />
-              )}
+              </FormControl>
+            </div>
+            <div className="recordFormCol widthauto">
+              <FormControl >
+                <MuiPickersUtilsProvider
+                  // variant="outlined"
+                  utils={DateFnsUtils}
+
+                >
+                  <KeyboardDatePicker
+
+                    label="End Date"
+                    format="MM/dd/yyyy"
+                    margin="normal"
+                    className=""
+                    id="start-date-picker-dialog"
+                    InputLabelProps={{
+                      className: "required-label white-text"
+                    }}
+                    InputProps={{ autoComplete: "off" }}
+                    name="estDate"
+                    animateYearScrolling={true}
+                    value={this.state.endDate}
+                    minDate={this.state.minEDate}
+                    maxDate={this.state.maxEDate}
+                    minDateMessage={enMsg.endMinDate}
+                    maxDateMessage={enMsg.endMaxDate}
+                    onChange={this.handleEndDate}
+                    onError={this.handleEndDateError}
+                    className="KeyboardDatePicker invoice_picker"
+                    invalidDateMessage={enMsg.invalidDate}
+                    KeyboardButtonProps={{
+                      "aria-label": "change date",
+                      className: "date-picker-span"
+                    }}
+                  />
+                </MuiPickersUtilsProvider>
+                <FormErrors
+                  show={!this.state.startDateValid}
+                  formErrors={this.state.formErrors}
+                  fieldName="startDate"
+                />
+              </FormControl>
+            </div>
+            <div className="recordFormCol widthauto">
+              <Button
+                className="client newbtn greenbtn"
+                type="button"
+                onClick={() => this.searchPollData()}
+                disabled={!this.validateForm() || this.state.loading}
+              >
+                <p>
+                  {this.state.loading && (
+                    <CircularProgress
+                      size={24}
+                      className="buttonProgress"
+                      color="secondary"
+                    />
+                  )}
               Search
             </p>
-          </Button>
-        </div>
-        </div>
-        <div className="full-width">
-        <GridContainer>
-          <CardBody>
-            <Paper className={(classes.root, this.cust_table_cover)}>
-              <div className={(classes.tableWrapper, this.cust_table)}>
-                <div className="table-respopnsive">
-                <Table>
-                  <TableHead className={this.tableh}>
-                    <TableRow>
-                      {columns.map(column => (
-                        <TableCell
-                          key={column.id}
-                          align={column.align}
-                          style={{ minWidth: column.minWidth }}
-                        >
-                          {column.label}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody key="TableBody">
-                    {typeof this.state.allPData === "object" &&
-                      this.state.allPData.length
-                      ? this.state.allPData
-                        .slice(
-                          this.state.page * this.state.rowsPerPage,
-                          this.state.page * this.state.rowsPerPage +
-                          this.state.rowsPerPage
-                        )
-                        .map(row => {
-                          return (
-                            <TableRow
-                              hover
-                              role="checkbox"
-                              tabIndex={-1}
-                              key={row.adNetworkId}
-                            >
-                              {columns.map(column => {
-                                const value = row[column.id];
-                                if (column.id == "dateCreated") {
-                                  let newDate = new Date(value).toUTCString();
-                                  return (
-                                    <TableCell key={column.id}>
-                                      {newDate}
-                                    </TableCell>
-                                  );
-                                }
+              </Button>
+            </div>
+            <div className="recordFormCol widthauto">
+              <h4 className={this.camph}>&nbsp;{(allPData && allPData.length) ? <CSVLink data={allPData} headers={csvAirHeaders} className="tblDownloadBtn cm2" filename={"airPollution.csv"}><i className="fa fa-download"></i></CSVLink> : ""}</h4>
+            </div>
+          </div>
+          <div className="full-width">
+            <GridContainer>
+              <CardBody>
+                <Paper className={(classes.root, this.cust_table_cover)}>
+                  <div className={(classes.tableWrapper, this.cust_table)}>
+                    <div className="table-respopnsive">
+                      <Table>
+                        <TableHead className={this.tableh}>
+                          <TableRow>
+                            {columns.map(column => (
+                              <TableCell
+                                key={column.id}
+                                align={column.align}
+                                style={{ minWidth: column.minWidth }}
+                              >
+                                {column.label}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        </TableHead>
+                        <TableBody key="TableBody">
+                          {typeof this.state.allPData === "object" &&
+                            this.state.allPData.length
+                            ? this.state.allPData
+                              .slice(
+                                this.state.page * this.state.rowsPerPage,
+                                this.state.page * this.state.rowsPerPage +
+                                this.state.rowsPerPage
+                              )
+                              .map(row => {
                                 return (
-                                  <TableCell
-                                    key={column.id}
-                                    align={column.align}
+                                  <TableRow
+                                    hover
+                                    role="checkbox"
+                                    tabIndex={-1}
+                                    key={row.adNetworkId}
                                   >
-                                    {column.format &&
-                                      typeof value === "number"
-                                      ? value
-                                      : (value) ? value : "0"}
-                                  </TableCell>
+                                    {columns.map(column => {
+                                      const value = row[column.id];
+                                      if (column.id == "dateCreated") {
+                                        let newDate = new Date(value).toUTCString();
+                                        return (
+                                          <TableCell key={column.id}>
+                                            {newDate}
+                                          </TableCell>
+                                        );
+                                      }
+                                      return (
+                                        <TableCell
+                                          key={column.id}
+                                          align={column.align}
+                                        >
+                                          {column.format &&
+                                            typeof value === "number"
+                                            ? value
+                                            : (value) ? value : "0"}
+                                        </TableCell>
+                                      );
+                                    })}
+                                  </TableRow>
                                 );
-                              })}
-                            </TableRow>
-                          );
-                        })
-                      : null}
-                  </TableBody>
-                </Table>
-                </div>
-              </div>
-              <TablePagination
-                rowsPerPageOptions={PER_PAGE_OPTIONS}
-                component="div"
-                count={
-                  typeof this.state.allPData === "object" &&
-                    this.state.allPData.length
-                    ? this.state.allPData.length
-                    : 0
-                }
-                rowsPerPage={this.state.rowsPerPage}
-                page={this.state.page}
-                backIconButtonProps={{
-                  "aria-label": "previous page"
-                }}
-                nextIconButtonProps={{
-                  "aria-label": "next page"
-                }}
-                onChangePage={this.handleChangePage}
-                onChangeRowsPerPage={this.handleChangeRowsPerPage}
-              />
-            </Paper>
-          </CardBody>
-        </GridContainer>
-        </div>
+                              })
+                            : null}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                  <TablePagination
+                    rowsPerPageOptions={PER_PAGE_OPTIONS}
+                    component="div"
+                    count={
+                      typeof this.state.allPData === "object" &&
+                        this.state.allPData.length
+                        ? this.state.allPData.length
+                        : 0
+                    }
+                    rowsPerPage={this.state.rowsPerPage}
+                    page={this.state.page}
+                    backIconButtonProps={{
+                      "aria-label": "previous page"
+                    }}
+                    nextIconButtonProps={{
+                      "aria-label": "next page"
+                    }}
+                    onChangePage={this.handleChangePage}
+                    onChangeRowsPerPage={this.handleChangeRowsPerPage}
+                  />
+                </Paper>
+              </CardBody>
+            </GridContainer>
+          </div>
         </span>
         <span className="box-with-bg">
-        <div className="recordFormRow">
-          <div className="recordFormHead white-text">Climate Records</div>
-          <div className="full-width text-right">
-          <div className="recordFormCol widthauto">
-            <FormControl >
-              <MuiPickersUtilsProvider
-                variant="outlined"
-                utils={DateFnsUtils}
-              >
-                <KeyboardDatePicker
+          <div className="recordFormRow">
+            <div className="recordFormHead white-text">Climate Records</div>
+            <div className="full-width text-right">
+              <div className="recordFormCol widthauto">
+                <FormControl >
+                  <MuiPickersUtilsProvider
+                    variant="outlined"
+                    utils={DateFnsUtils}
+                  >
+                    <KeyboardDatePicker
 
-                  label="Start Date"
-                  format="MM/dd/yyyy"
-                  margin="normal"
-                  className=""
-                  id="start-date-picker-dialog"
-                  InputLabelProps={{
-                    className: "required-label white-text"
-                  }}
-                  InputProps={{ autoComplete: "off" }}
-                  name="estDate"
-                  animateYearScrolling={true}
-                  value={this.state.startDateT}
-                  minDate={this.state.minSDateT}
-                  maxDate={this.state.maxSDateT}
-                  minDateMessage={enMsg.startMinDate}
-                  maxDateMessage={enMsg.startMaxDate}
-                  onChange={this.handleStartDateT}
-                  onError={this.handleStartDateErrorT}
-                  className="KeyboardDatePicker invoice_picker"
-                  invalidDateMessage={enMsg.invalidDate}
-                  KeyboardButtonProps={{
-                    "aria-label": "change date",
-                    className: "date-picker-span"
-                  }}
-                />
-              </MuiPickersUtilsProvider>
-              <FormErrors
-                show={!this.state.startDateValid}
-                formErrors={this.state.formErrors}
-                fieldName="startDate"
-              />
-            </FormControl>
-          </div>
-          <div className="recordFormCol widthauto">
-            <FormControl >
-              <MuiPickersUtilsProvider
-                // variant="outlined"
-                utils={DateFnsUtils}
-
-              >
-                <KeyboardDatePicker
-
-                  label="End Date"
-                  format="MM/dd/yyyy"
-                  margin="normal"
-                  className=""
-                  id="start-date-picker-dialog"
-                  InputLabelProps={{
-                    className: "required-label white-text"
-                  }}
-                  InputProps={{ autoComplete: "off" }}
-                  name="estDate"
-                  animateYearScrolling={true}
-                  value={this.state.endDateT}
-                  minDate={this.state.minEDateT}
-                  maxDate={this.state.maxEDateT}
-                  minDateMessage={enMsg.endMinDate}
-                  maxDateMessage={enMsg.endMaxDate}
-                  onChange={this.handleEndDateT}
-                  onError={this.handleEndDateErrorT}
-                  className="KeyboardDatePicker invoice_picker"
-                  invalidDateMessage={enMsg.invalidDate}
-                  KeyboardButtonProps={{
-                    "aria-label": "change date",
-                    className: "date-picker-span"
-                  }}
-                />
-              </MuiPickersUtilsProvider>
-              <FormErrors
-                show={!this.state.startDateValid}
-                formErrors={this.state.formErrors}
-                fieldName="startDate"
-              />
-            </FormControl>
-          </div>
-          <div className="recordFormCol widthauto">
-            <Button
-              className="client newbtn greenbtn"
-              type="button"
-              onClick={() => this.searchPollDataT()}
-              disabled={!this.validateFormT() || this.state.loading}
-            >
-              <p>
-                {this.state.loading && (
-                  <CircularProgress
-                    size={24}
-                    className="buttonProgress"
-                    color="secondary"
+                      label="Start Date"
+                      format="MM/dd/yyyy"
+                      margin="normal"
+                      className=""
+                      id="start-date-picker-dialog"
+                      InputLabelProps={{
+                        className: "required-label white-text"
+                      }}
+                      InputProps={{ autoComplete: "off" }}
+                      name="estDate"
+                      animateYearScrolling={true}
+                      value={this.state.startDateT}
+                      minDate={this.state.minSDateT}
+                      maxDate={this.state.maxSDateT}
+                      minDateMessage={enMsg.startMinDate}
+                      maxDateMessage={enMsg.startMaxDate}
+                      onChange={this.handleStartDateT}
+                      onError={this.handleStartDateErrorT}
+                      className="KeyboardDatePicker invoice_picker"
+                      invalidDateMessage={enMsg.invalidDate}
+                      KeyboardButtonProps={{
+                        "aria-label": "change date",
+                        className: "date-picker-span"
+                      }}
+                    />
+                  </MuiPickersUtilsProvider>
+                  <FormErrors
+                    show={!this.state.startDateValid}
+                    formErrors={this.state.formErrors}
+                    fieldName="startDate"
                   />
-                )}
-                Search
-              </p>
-            </Button>
-          </div>
-          </div>
-        </div>
-        <GridContainer>
-          <CardBody>
-            <Paper className={(classes.root, this.cust_table_cover)}>
-              <div className={(classes.tableWrapper, this.cust_table)}>
-              <div className="table-respopnsive">
-                <Table>
-                  <TableHead className={this.tableh}>
-                    <TableRow>
-                      {columnsTemp.map(column => (
-                        <TableCell
-                          key={column.id}
-                          align={column.align}
-                          style={{ minWidth: column.minWidth }}
-                        >
-                          {column.label}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody key="TableBody">
-                    {typeof this.state.allTData === "object" &&
-                      this.state.allTData.length
-                      ? this.state.allTData
-                        .slice(
-                          this.state.pageT * this.state.rowsPerPageT,
-                          this.state.pageT * this.state.rowsPerPageT +
-                          this.state.rowsPerPageT
-                        )
-                        .map(row => {
-                          return (
-                            <TableRow
-                              hover
-                              role="checkbox"
-                              tabIndex={-1}
-                              key={row.adNetworkId}
-                            >
-                              {columnsTemp.map(column => {
-                                const value = row[column.id];
-                                if (column.id == "dateCreated") {
-                                  let newDate = new Date(value).toUTCString();
-                                  return (
-                                    <TableCell key={column.id}>
-                                      {newDate}
-                                    </TableCell>
-                                  );
-                                }
-                                return (
-                                  <TableCell
-                                    key={column.id}
-                                    align={column.align}
-                                  >
-                                    {column.format &&
-                                      typeof value === "number"
-                                      ? column.format(value)
-                                      : (value) ? value : "unknown"}
-                                  </TableCell>
-                                );
-                              })}
-                            </TableRow>
-                          );
-                        })
-                      : null}
-                  </TableBody>
-                </Table>
-                </div>
+                </FormControl>
               </div>
-              <TablePagination
-                rowsPerPageOptions={PER_PAGE_OPTIONS}
-                component="div"
-                count={
-                  typeof this.state.allTData === "object" &&
-                    this.state.allTData.length
-                    ? this.state.allTData.length
-                    : 0
-                }
-                rowsPerPage={this.state.rowsPerPageT}
-                page={this.state.pageT}
-                backIconButtonProps={{
-                  "aria-label": "previous page"
-                }}
-                nextIconButtonProps={{
-                  "aria-label": "next page"
-                }}
-                onChangePage={this.handleChangePageT}
-                onChangeRowsPerPage={this.handleChangeRowsPerPageT}
-                color="#ffffff"
-              />
-            </Paper>
-          </CardBody>
-        </GridContainer>
+              <div className="recordFormCol widthauto">
+                <FormControl >
+                  <MuiPickersUtilsProvider
+                    // variant="outlined"
+                    utils={DateFnsUtils}
+
+                  >
+                    <KeyboardDatePicker
+
+                      label="End Date"
+                      format="MM/dd/yyyy"
+                      margin="normal"
+                      className=""
+                      id="start-date-picker-dialog"
+                      InputLabelProps={{
+                        className: "required-label white-text"
+                      }}
+                      InputProps={{ autoComplete: "off" }}
+                      name="estDate"
+                      animateYearScrolling={true}
+                      value={this.state.endDateT}
+                      minDate={this.state.minEDateT}
+                      maxDate={this.state.maxEDateT}
+                      minDateMessage={enMsg.endMinDate}
+                      maxDateMessage={enMsg.endMaxDate}
+                      onChange={this.handleEndDateT}
+                      onError={this.handleEndDateErrorT}
+                      className="KeyboardDatePicker invoice_picker"
+                      invalidDateMessage={enMsg.invalidDate}
+                      KeyboardButtonProps={{
+                        "aria-label": "change date",
+                        className: "date-picker-span"
+                      }}
+                    />
+                  </MuiPickersUtilsProvider>
+                  <FormErrors
+                    show={!this.state.startDateValid}
+                    formErrors={this.state.formErrors}
+                    fieldName="startDate"
+                  />
+                </FormControl>
+              </div>
+              <div className="recordFormCol widthauto">
+                <Button
+                  className="client newbtn greenbtn"
+                  type="button"
+                  onClick={() => this.searchPollDataT()}
+                  disabled={!this.validateFormT() || this.state.loading}
+                >
+                  <p>
+                    {this.state.loading && (
+                      <CircularProgress
+                        size={24}
+                        className="buttonProgress"
+                        color="secondary"
+                      />
+                    )}
+                Search
+                </p>
+                </Button>
+              </div>
+              <div className="recordFormCol widthauto">
+                <h4 className={this.camph}>&nbsp;{(allTData && allTData.length) ? <CSVLink data={allTData} headers={csvTempHeaders} className="tblDownloadBtn cm2" filename={"climateRecords.csv"}><i className="fa fa-download"></i></CSVLink> : ""}</h4>
+              </div>
+            </div>
+          </div>
+          <GridContainer>
+            <CardBody>
+              <Paper className={(classes.root, this.cust_table_cover)}>
+                <div className={(classes.tableWrapper, this.cust_table)}>
+                  <div className="table-respopnsive">
+                    <Table>
+                      <TableHead className={this.tableh}>
+                        <TableRow>
+                          {columnsTemp.map(column => (
+                            <TableCell
+                              key={column.id}
+                              align={column.align}
+                              style={{ minWidth: column.minWidth }}
+                            >
+                              {column.label}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody key="TableBody">
+                        {typeof this.state.allTData === "object" &&
+                          this.state.allTData.length
+                          ? this.state.allTData
+                            .slice(
+                              this.state.pageT * this.state.rowsPerPageT,
+                              this.state.pageT * this.state.rowsPerPageT +
+                              this.state.rowsPerPageT
+                            )
+                            .map(row => {
+                              return (
+                                <TableRow
+                                  hover
+                                  role="checkbox"
+                                  tabIndex={-1}
+                                  key={row.adNetworkId}
+                                >
+                                  {columnsTemp.map(column => {
+                                    const value = row[column.id];
+                                    if (column.id == "dateCreated") {
+                                      let newDate = new Date(value).toUTCString();
+                                      return (
+                                        <TableCell key={column.id}>
+                                          {newDate}
+                                        </TableCell>
+                                      );
+                                    }
+                                    return (
+                                      <TableCell
+                                        key={column.id}
+                                        align={column.align}
+                                      >
+                                        {column.format &&
+                                          typeof value === "number"
+                                          ? column.format(value)
+                                          : (value) ? value : "unknown"}
+                                      </TableCell>
+                                    );
+                                  })}
+                                </TableRow>
+                              );
+                            })
+                          : null}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+                <TablePagination
+                  rowsPerPageOptions={PER_PAGE_OPTIONS}
+                  component="div"
+                  count={
+                    typeof this.state.allTData === "object" &&
+                      this.state.allTData.length
+                      ? this.state.allTData.length
+                      : 0
+                  }
+                  rowsPerPage={this.state.rowsPerPageT}
+                  page={this.state.pageT}
+                  backIconButtonProps={{
+                    "aria-label": "previous page"
+                  }}
+                  nextIconButtonProps={{
+                    "aria-label": "next page"
+                  }}
+                  onChangePage={this.handleChangePageT}
+                  onChangeRowsPerPage={this.handleChangeRowsPerPageT}
+                  color="#ffffff"
+                />
+              </Paper>
+            </CardBody>
+          </GridContainer>
         </span>
       </div>
     );
